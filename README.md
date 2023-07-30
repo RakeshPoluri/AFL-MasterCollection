@@ -5,4 +5,4 @@ Personal collection of diverse self-created AFLs (AmiBroker Formula Language scr
 
 You just need to copy and paste the Formulas folder into your AmiBroker's file location as shown below.
 
-![Location of Formulas Folder]([.docs/assets/images/Formulas_Location.gif](https://github.com/RakeshPoluri/AFL-MasterCollection/blob/main/docs/assets/images/Formulas_Location.gif)https://github.com/RakeshPoluri/AFL-MasterCollection/blob/main/docs/assets/images/Formulas_Location.gif)
+![Location of Formulas Folder](https://github.com/RakeshPoluri/AFL-MasterCollection/blob/main/docs/assets/images/Formulas_Location.gif)
