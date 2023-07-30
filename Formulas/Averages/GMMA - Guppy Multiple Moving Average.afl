@@ -1,0 +1,18 @@
+SetChartOptions(0, chartShowArrows | chartShowDates);
+
+FastMAColor = ParamColor("Fast Group MA Color", colorGreen);
+SlowMAColor = ParamColor("Slow Group MA Color", colorRed);
+
+Plot(EMA(C, 3), _DEFAULT_NAME(), FastMAColor, styleLine);
+Plot(EMA(C, 5), _DEFAULT_NAME(), FastMAColor, styleLine);
+Plot(EMA(C, 8), _DEFAULT_NAME(), FastMAColor, styleLine);
+Plot(EMA(C, 10), _DEFAULT_NAME(), FastMAColor, styleLine);
+Plot(EMA(C, 12), _DEFAULT_NAME(), FastMAColor, styleLine);
+Plot(EMA(C, 15), _DEFAULT_NAME(), FastMAColor, styleLine);
+
+Plot(EMA(C, 30), _DEFAULT_NAME(), SlowMAColor, styleLine);
+Plot(EMA(C, 35), _DEFAULT_NAME(), SlowMAColor, styleLine);
+Plot(EMA(C, 40), _DEFAULT_NAME(), SlowMAColor, styleLine);
+Plot(EMA(C, 45), _DEFAULT_NAME(), SlowMAColor, styleLine);
+Plot(EMA(C, 50), _DEFAULT_NAME(), SlowMAColor, styleLine);
+Plot(EMA(C, 60), _DEFAULT_NAME(), SlowMAColor, styleLine);

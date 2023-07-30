@@ -1,0 +1,10 @@
+P = ParamField("Price field",-1);
+fast = Param("Fast Periods", 2, 2, 10, 1);
+slow = Param("Slow Periods", 30, 5, 100, 1);
+fast = 2/(fast+1);
+slow = 2/(slow+1);
+dir=abs(P-ref(P,-10));
+vol=sum(abs(P-ref(P,-1)),10);
+ER=dir/vol;
+sc =( ER*(fast-slow)+slow)^2; 
+Plot( AMA( P, sc ), _DEFAULT_NAME(), ParamColor("Color", colorBlue), ParamStyle("Style"));

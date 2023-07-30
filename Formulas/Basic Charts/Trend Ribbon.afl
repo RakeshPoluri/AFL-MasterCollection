@@ -1,0 +1,12 @@
+_SECTION_BEGIN("Trend Ribbon");
+
+p		= ParamField("Field", -1);
+period	= Param("Slope Period", 5);
+
+TOsc = LinRegSlope(p, period);
+
+/*Plot Ribbon */
+Ribbon1=IIf( TOsc >= 0 ,colorGreen, IIf(TOsc < 0, colorRed,colorYellow));
+Plot(10, "Ribbon", Ribbon1, ParamStyle( "Squeeze Style", styleOwnScale|styleArea|styleNoLabel|styleNoTitle, maskAll ), 5.2, 199);
+
+_SECTION_END();

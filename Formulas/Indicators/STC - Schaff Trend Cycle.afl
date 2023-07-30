@@ -1,0 +1,38 @@
+_len = Param("Length", 12);
+flen = Param("FastLength", 26);
+slen = Param("SlowLength", 50);
+mult = Param("Mult", 0.5);
+
+function calc(arg1, arg2, arg3)
+{
+	diff = EMA(Close, arg2) - EMA(Close, arg3);
+	_low = LLV(diff, arg1);
+	band = HHV(diff, arg1) - _low;
+	
+	for( i = 1; i < BarCount; i++ )
+	{	
+		_1st[0] = 0.0;
+		_1st[i] = IIf(band[i] > 0, (diff[i] - _low[i]) / band[i] * 100, nz(_1st[i-1]));
+		_2nd[0] = 0.0;
+		_2nd[i] = IIf(IsNull(_2nd[i-1]), _1st[i], _2nd[i-1] + mult * (_1st[i] - _2nd[i-1]));
+	}
+	_3rd = LLV(_2nd, arg1);
+	_4th = HHV(_2nd, arg1) - _3rd;
+	for( i = 1; i < BarCount; i++ )
+	{
+		_5th[0] = 0.0;
+		_5th[i] = IIf(_4th[i] > 0, (_2nd[i] - _3rd[i]) / _4th[i] * 100, nz(_5th[i-1]));
+		final[0] = 0.0;
+		final[i] = IIf(IsNull(final[i-1]), _5th[i], final[i-1] + mult * (_5th[i] - final[i-1]));
+	}
+	return final;
+}
+
+stc = calc(_len, flen, slen);
+mColor = IIf(stc > Ref(stc, -1), colorBrightGreen, colorRed);
+
+plot(stc, "STC", mColor, styleThick);
+PlotGrid(25, colorWhite);
+PlotGrid(75, colorWhite);
+
+PlotOHLC( 75, 75, 25, 25, "", ColorBlend( colorWhite, GetChartBkColor(), 0.8 ), styleNoLabel | styleCloud | styleNoRescale, Null, Null, Null, -1 );

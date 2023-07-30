@@ -1,0 +1,38 @@
+fh = fopen( "C:\\AmiBroker Exports\\" + Name() + ".csv", "w" );
+
+bir = Status( "barinrange" );
+
+if( fh )
+{
+	fputs("Ticker,Date,Open,High,Low,Close,Volume\n", fh );
+	
+	dt = DateTime();
+	//DateTimeFormat("%Y-%m-%d,%H:%M:%S", dt[i]) + "," + 
+	
+	for( i = 0; i < BarCount; i++ )
+	{
+		if( bir[i] ) 
+		{
+			Line = Name() + "," +
+			DateTimeFormat("%Y-%m-%d", dt[i]) + "," + 
+			StrFormat("%.2f", O[i]) + "," + 
+			StrFormat("%.2f", H[i]) + "," + 
+			StrFormat("%.2f", L[i]) + "," + 
+			StrFormat("%.2f", C[i]) + "," + 
+			StrFormat("%.0f", V[i]) + "\n";
+			
+			fputs( Line, fh );
+		}
+	}
+	
+	fclose( fh );
+}
+
+SetOption("NoDefaultColumns", True);
+
+Buy=Sell=0; // for scan
+
+Filter = Status("lastbarinrange");
+
+AddTextColumn(Name(), "Ticker");
+AddTextColumn("Export done", "Status");

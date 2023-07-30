@@ -1,0 +1,239 @@
+// Downloaded From https://www.WiseStockTrader.com
+/* Point & Figure [315a].afl
+Submitted by parfumeur, original credit Graham Kavanagh  17 Apr 2004
+http://www.wisestocktrader.com/indicators/315-point-figure-chart-based-on-closing-price-v4-53
+3/16/2017 10:01:01 PM
+
+Point & Figure charting
+
+Interpretation window data included. 1:1 Line drawn when column selected with 
+slope = boxsize. Box size based on ATR of closing price
+
+<Reverse> is now a reserved word. Changed to ,Reverse_>
+
+*/
+
+//Version(6.20.1);
+
+SetBarsRequired(100000,100000);
+
+range = Min(260,BarCount/2);
+box = LastValue( round(ATR(range)*100)/100 );
+Reverse_ = 3;									// reversal requirement
+
+CX			= round(C/box);
+CF			= ceil(Cx);
+CR			= floor(Cx);
+
+Bar			= BarIndex();
+BarDate = DateNum();
+BarTurn = 0;
+BarEnd	= 0;
+
+
+// initialize first element
+j = 0;
+PFC[j]	= CF[0];
+PFO[j]	= CF[0]+1;
+
+down		= 1;									// By default the first bar is a down bar.
+up			= 0;
+
+// perform the loop that produces PF Chart
+for( i = 1; i < BarCount; i++ )
+{
+ if( CF[i] <= PFC[j]-1 && down)					//continue down
+ {
+  PFC[j] = CF[i];
+  PFO[j] = CF[i]+1;
+  BarEnd[j] = Bar[i];
+ }
+ else
+ {
+  if( CR[i] >= PFC[j] + Reverse_ && down)  //Change direction to up
+  {
+   j++;
+   up			= 1;
+   down		= 0;
+   PFC[j]			= CR[i];
+   PFO[j]			= CR[i] - 1;
+   BarTurn[j]	= Bar[i];
+   BarEnd[j]	= Bar[i];
+  }
+ }
+ if( CR[i] >= PFC[j] + 1 && up)					//Continue up
+ {
+  PFC[j]		= CR[i];
+  PFO[j]		= CR[i] - 1;
+  BarEnd[j]	= Bar[i];
+ }
+ else
+ {
+  if( CF[i] <= PFC[j] - Reverse_ && up) //Change direction to down
+  {
+   j++;
+   up = 0;
+   down = 1;
+   PFC[j] = CR[i];
+   PFO[j] = CR[i]+1;
+   BarTurn[j] = Bar[i];
+   BarEnd[j] = Bar[i];
+  }
+ }
+}
+
+delta = BarCount-1 - j;
+
+BarTurns	= Ref( BarTurn, -delta);
+BarEnds		= Ref( BarEnd, -delta);
+
+PFO = Ref( PFO, -delta );
+PFC = Ref( PFC, -delta );
+H = IIf( Ref(PFC,-1)>Ref(PFO,-1), Ref(HHV(PFC,1),-1)-1, Max(PFO,PFC) )*box + box/2;
+L = IIf( Ref(PFC,-1)<Ref(PFO,-1), Ref(LLV(PFC,1),-1)+1, Min(PFO,PFC) )*box - box/2;
+O = IIf( Ref(PFC,-1)>Ref(PFO,-1), Ref(HHV(PFC,1),-1)-1, IIf(
+Ref(PFc,-1)<Ref(PFO,-1), Ref(LLV(PFC,1),-1)+1, PFO ) )*box;
+
+// the difference between Open AND Close is set to box size the sign decides if 
+// X or O are plotted
+
+C = O + box * IIf( PFC > PFO, 1, -1 );
+
+top = H - box/2;
+bot = L + box/2;
+
+GraphXSpace = 5;
+
+//Title = Name() + " " + Now(1) + ": PF System, H: $" + Top + (for today's date)
+
+_N( 
+Title = Name() + " " + Date() + ": PF System, H: $" + Top + ", L: $" + Bot + ",
+Box $" + Box + " Reversal " + Reverse_ + "\n" + "NewCol bar " + BarTurns + " date
+" + WriteVal(
+ValueWhen(BarIndex()==SelectedValue(BarTurns),DateTime()),formatDateTime)  + "
+ColEnd bar " + BarEnds + " date " + WriteVal(
+ValueWhen(BarIndex()==SelectedValue(BarEnds),DateTime()),formatDateTime) 
+  );
+
+Plot(C, "P&F Close", IIf( PFC > PFO, colorGreen, colorRed ), styleCandle +
+stylePointAndFigure);		// Change the colors of the [X], green and [O], red here
+
+nm = Name();
+
+Filter = 1;//C>0; 
+
+AddColumn(C, "Close");
+
+SetOption( "NoDefaultColumns", True );
+
+//AddTextColumn( "", "Ticker", 1, -1, -1, 60 );
+//AddColumn( Null, "Open");
+//AddColumn( Null, "High");
+//AddColumn( Null, "Low");
+//AddColumn( Null, "Close");
+//AddColumn( Null, "Volume", 1.0);
+//AddColumn( Null, "Open Interest", 1.0);
+
+//for( i = 0; i < BarCount; i++ ) {
+//	_o = StrFormat("\t%.2f", O[i]);
+//	_h = StrFormat("\t%.2f", H[i]);
+//	_l = StrFormat("\t%.2f", L[i]);
+//	_c = StrFormat("\t%.2f", C[i]);
+//	_v = StrFormat("\t%.0f", V[i]);
+//	_oi = StrFormat("\t%.0f", OI[i]);
+//	AddRow( nm + _o + _h + _l + _c + _v ); // + _oi );
+//}
+
+//LineUp = LineArray( SelectedValue(BarIndex()), SelectedValue(L),
+//SelectedValue(BarIndex())+1, SelectedValue(L)+box, 1, 0 );
+//Linedown = LineArray( SelectedValue(BarIndex()), SelectedValue(H),
+//SelectedValue(BarIndex())+1, SelectedValue(H)-box, 1, 0 );
+//Plot(IIf(SelectedValue(PFC<PFO),Lineup,Null), "Line", colorGreen, styleLine +
+//styleNoLabel + styleNoRescale);
+//Plot(IIf(SelectedValue(PFC>PFO),Linedown,Null), "Line", colorBrown, styleLine +
+//styleNoLabel + styleNoRescale);
+
+//--Indicator-End-- 
+//Name() +", "+FullNasme();
+//"";
+//"Direction  = " + WriteIf(pfc>pfo,"Up","Down");
+//"Move Today = " + WriteIf(BarIndex()==SelectedValue(BarEnds),"Yes" +
+//WriteIf(BarIndex()==SelectedValue(BarTurns),", New Column", ",
+//Continuation"),"No");
+//"";
+//"Column Start \n   BarIndex() = " + BarTurns + "\n   Date() = " + WriteVal(
+//ValueWhen(BarIndex()==SelectedValue(BarTurns), DateTime()), formatDateTime);
+//"Column End \n   BarIndex() = " + BarEnds + "\n   Date() = " + WriteVal(
+//ValueWhen(BarIndex()==SelectedValue(BarEnds),DateTime()),formatDateTime);
+
+// ==================== End of PnF Amibroker Formula ===========================
+
+//nm = Name();
+
+//Filter = 1;//C>0; 
+
+//SetOption( "NoDefaultColumns", True );
+
+//AddTextColumn( "", "Ticker", 1, -1, -1, 60 );
+//AddColumn( Null, "Open");
+//AddColumn( Null, "High");
+//AddColumn( Null, "Low");
+//AddColumn( Null, "Close");
+//AddColumn( Null, "Volume", 1.0);
+//AddColumn( Null, "Open Interest", 1.0);
+
+//for( i = 0; i < BarCount; i++ ) {
+//	_o = StrFormat("\t%.2f", O[i]);
+//	_h = StrFormat("\t%.2f", H[i]);
+//	_l = StrFormat("\t%.2f", L[i]);
+//	_c = StrFormat("\t%.2f", C[i]);
+//	_v = StrFormat("\t%.0f", V[i]);
+//	_oi = StrFormat("\t%.0f", OI[i]);
+//	AddRow( nm + _o + _h + _l + _c + _v ); // + _oi );
+//}
+
+MA_05 = WMA(C, 5);
+MA_14 = WMA(C, 14);
+MA_24 = WMA(C, 24);
+
+SetOption( "FuturesMode", True );
+SetTradeDelays(1, 1, 1, 1);
+BuyPrice = SellPrice = ShortPrice = CoverPrice = Open;
+
+Buy = MA_05 > MA_14;
+Sell = MA_14 < MA_24;
+Short = MA_05 < MA_14;
+Cover = MA_14 > MA_24;
+
+Buy = ExRem(Buy, Sell);
+Sell = ExRem(Sell, Buy);
+Short = ExRem(Short, Cover);
+Cover = ExRem(Cover, Short);
+
+PlotShapes(IIf(Buy, shapeSquare, shapeNone),colorGreen, 0, L, Offset=-40);
+PlotShapes(IIf(Buy, shapeSquare, shapeNone),colorLime, 0,L, Offset=-50);
+PlotShapes(IIf(Buy, shapeUpArrow, shapeNone),colorWhite, 0,L, Offset=-45);
+PlotShapes(IIf(Short, shapeSquare, shapeNone),colorRed, 0, H, Offset=40);
+PlotShapes(IIf(Short, shapeSquare, shapeNone),colorOrange, 0,H, Offset=50);
+PlotShapes(IIf(Short, shapeDownArrow, shapeNone),colorWhite, 0,H, Offset=-45);
+PlotShapes(IIf(Sell, shapeDownArrow, shapeNone),colorBlue, 0,H, Offset=-45);
+PlotShapes(IIf(Cover, shapeUpArrow, shapeNone),colorBlue, 0,L, Offset=-45);
+
+capital = Param("Capital", 5000000, 10000, 10000000, 10000);
+scrips = Param("Scrips", 1, 1, 50, 1);
+leverage = Param("Leverage", 7, 1, 10, 1);
+
+SetOption("MinShares", 1);
+SetOption("InitialEquity", capital);
+SetOption("MaxOpenPositions", scrips ); 
+SetOption("AccountMargin", 100/leverage);
+//SetPositionSize( leverage * 100/scrips, spsPercentOfEquity );	
+RoundLotSize = 75;
+PointValue = 1;
+
+SetOption( "MinShares", RoundLotSize );
+SetPositionSize(  RoundLotSize * 100 * leverage, spsShares );
+SetOption( "FuturesMode", False );
+
+ApplyStop(stopTypeLoss, stopModePoint, 2000);
+ApplyStop(stopTypeTrailing, stopModePoint, 1500);

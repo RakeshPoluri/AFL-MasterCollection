@@ -1,0 +1,12 @@
+_scrip = ParamStr("Scrip", "NIFTY");
+
+_param = Param("Period", 25, 0, 500, 10);
+ 
+nifty = Foreign(_scrip, "C"); 
+
+//rs = (ROC(C, _param) / ROC(nifty, _param)) - 1; 
+
+rs = (((C / Ref(C, -_param)) / (nifty / Ref(nifty, -_param))) - 1) * 100;
+
+Plot(rs, "RelStrength " + "(" + _param + ")", ParamColor( "Color", colorRed ), ParamStyle("Style")  );
+PlotGrid(0, colorYellow);

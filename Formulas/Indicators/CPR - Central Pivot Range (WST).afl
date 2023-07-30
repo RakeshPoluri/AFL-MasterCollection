@@ -1,0 +1,29 @@
+/* Downloaded From https://www.WiseStockTrader.com */
+//GraphXSpace = 5 ;
+//SetChartOptions(0,chartShowArrows|chartShowDates);
+
+//_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+//Plot( C, "Close", ParamColor("Color", colorDefault ), styleNoTitle | ParamStyle("Style") | GetPriceStyle() ); 
+
+ppl = ParamToggle("Plot CPR","Off|On",1);
+
+//numbars = LastValue(Cum(Status("barvisible")));
+//fraction= IIf(StrRight(Name(),3) == "", 3.2, 3.2);
+//hts = -33.5;
+
+PC = TimeFrameGetPrice("C", inDaily, -1);
+PH = TimeFrameGetPrice("H", inDaily, -1);
+PL = TimeFrameGetPrice("L", inDaily, -1);
+
+pivot = (PH + PL + PC)/3; pivotI = LastValue(pivot, 1);
+bc = (PH + PL) / 2; bcI = LastValue(bc, 1);
+tc = pivot + (pivot - bc); tcI = LastValue(tc, 1);
+
+if(ppl==1) {
+Plot(pivot,"Pivot",colorBlue,styleLine|styleDots|styleNoRescale);
+Plot(bc,"Bottom CPR",colorRed,styleLine|styleNoRescale);
+Plot(tc,"Top CPR",colorGreen,styleLine|styleNoRescale);
+//PlotText(" Pivot = " + WriteVal(pivot,fraction), LastValue(BarIndex())-(numbars/Hts), pivotI +0.05, colorBlue);
+//PlotText(" Bottom CPR = " + WriteVal(bc,fraction), LastValue(BarIndex())-(numbars/Hts), bcI +0.05, colorRed);
+//PlotText(" Top CPR = " + WriteVal(tc,fraction), LastValue(BarIndex())-(numbars/Hts), tcI +0.05, colorGreen);
+}

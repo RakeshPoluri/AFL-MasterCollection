@@ -1,0 +1,28 @@
+CorrLB = Param("Lookback", 252, 50, 500, 1); // daily correlation look-back period//
+
+wlnumber = GetOption( "FilterIncludeWatchlist" ); // choose your WL in Analysis window
+symlist = GetCategorySymbols( categoryWatchlist, wlnumber );
+
+// display only last bar from the Analysis range
+Filter = Status( "lastbarinrange" );
+SetSortColumns(1); // I added this to keep the columns and rows in order
+Tickers = Name();
+
+// iterate through symbols
+logC = log( C / Ref( C, -1 ) );// does not belong within loop
+for( i = 0; ( sym = StrExtract( symlist, i ) ) != ""; i++ )
+{
+    Frg = Foreign( sym, "C" ); // store Foreign to variable since it is called multiple times
+    FrgLog = log( Frg / Ref( Frg, -1 ) );
+    Corr = Correlation( logC, FrgLog, CorrLB );
+
+    // set color dynamically based on correlation values
+    // and display the output in exploration column
+    corrcond = Corr>0.6;// used several times
+    tickercond = Tickers == sym;// used several times
+    Clr = 32 + SelectedValue( Corr ) * 32;
+    Clr = IIf( tickercond, colorBlack, Clr );
+    fntcolor = IIf( tickercond, colorWhite, IIf(corrcond,colorWhite, -1 ));
+    cellcolor = IIf( tickercond, colorDarkBlue, IIf(corrcond, colorGreen, -1) );
+    AddColumn( Corr, sym, 1.3, fntcolor, cellcolor, width = 60 );
+}

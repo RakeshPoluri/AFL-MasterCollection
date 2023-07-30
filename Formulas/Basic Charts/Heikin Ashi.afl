@@ -1,0 +1,25 @@
+_SECTION_BEGIN("Heikin Ashi");
+
+HaC = (O + H + L + C)/4;
+HaO = AMA( Ref( HaC, -1 ), 0.5 );
+HaO = (Ref( HaO, -1 ) + Ref( HaC, -1 )) / 2;
+HaH = Max( H, Max( HaC, HaO ) );
+HaL = Min( L, Min( HaC, HaO ) );
+
+Open	= HaO;
+High	= HaH;
+Low		= HaL;
+Close	= HaC;
+
+barcolor = IIf(C >= O, colorBrightGreen, colorRed);
+
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", HaO, HaH, HaL, HaC, SelectedValue( ROC( HaC, 1 ) ) ));
+PlotOHLC( O, H, L, C, _DEFAULT_NAME(), barcolor, styleCandle|styleNoTitle );
+
+Plot(O, "HA Open", colorWhite, styleNoDraw);
+Plot(H, "HA High", colorWhite, styleNoDraw);
+Plot(L, "HA Low", colorWhite, styleNoDraw);
+Plot(C, "HA Close", colorWhite, styleNoDraw);
+
+_SECTION_END(); 

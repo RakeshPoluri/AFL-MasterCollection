@@ -1,0 +1,91 @@
+/*
+	Author: Anderson Wilson 
+		based on PriceVolDistribution demo written by Tomasz Janeczko
+		
+Volume-by-Price is an indicator that shows the amount of volume for a particular price range,
+The Volume-by-Price bars are horizontal and shown on the left side of the chart to correspond 
+with these price ranges. Bar colors indicate bear/bull volume
+
+Use F12 and SHIFT+F12 to define range
+*/
+SetChartOptions(0,chartShowArrows|chartShowDates);
+
+bi = BarIndex();
+fvb = BeginValue(bi);
+lvb = EndValue(bi);
+if( fvb == 0 && lvb == LastValue(bi) ) {
+	fvb = FirstVisibleValue( bi );
+	lvb = LastVisibleValue( bi );
+}
+fvb = Max( 0, fvb );
+lvb = Max( 0, lvb );
+
+bins = Param("Bins", 100, 3, 100, 1);
+pRecHeight = Param("Rectangle Height", 0.90, 0.10, 1, 0.05);
+
+BullBearZone = (High - Low) / 3;
+bullbar = C > (High - BullBearZone);
+bearbar = C < (Low + BullBearZone);
+
+mx = PriceVolDistribution( H, L, C, bins, True, fvb, lvb );
+mx1 = PriceVolDistribution( H, L, IIf( bullbar, C, 0 ), bins, True, fvb, lvb );
+mx2 = PriceVolDistribution( H, L, IIf( bearbar, C, 0 ), bins, True, fvb, lvb );
+
+bins = MxGetSize( mx, 0 );
+bins1 = MxGetSize( mx1, 0 );
+bins2 = MxGetSize( mx2, 0 );
+
+GfxSetOverlayMode( 1 );
+GfxSetCoordsMode( 1 );
+
+if( bins > 1 && bins == bins1 && bins == bins2 ) {
+
+	MaxVolume = mx[ 0 ][ 1 ];
+
+	// find max volume
+	for( i = 1; i < bins; i++ )
+	{
+		if( mx[ i ][ 1 ] > MaxVolume )
+			MaxVolume = mx[ i ][ 1 ];
+	}
+	
+	// rectangle height
+	RecHeight = (mx[ 1 ][ 0 ] - mx[ 0 ][ 0 ]) / 2 * pRecHeight;
+	
+	for( i = 0; i < bins; i++ )
+	{
+		price = mx1[ i ][ 0 ]; // price level
+		
+		absVolume = mx1[ i ][ 1 ];
+		VolAcum = absVolume;
+		relvolume = absVolume / MaxVolume;
+		relbar = relvolume * (lvb-fvb+1);
+		
+		// upper left corner of the rectangle.	
+		x1 = fvb;
+		y1 = price + RecHeight;
+		// lower right corner of the rectangle.	
+		x2 = fvb + relbar;
+		y2 = price - RecHeight; 
+
+		GfxFillSolidRect( x1, y1, x2, y2, colorGreen );
+		
+		absVolume = mx2[ i ][ 1 ];
+		VolAcum += absVolume;
+		relvolume = absVolume / MaxVolume;
+		relbar2 = relvolume * (lvb-fvb+1);
+
+		x1 = x2;
+		x2 = x1 + relbar2;
+		GfxFillSolidRect( x1, y1, x2, y2, colorPink );
+
+		absVolume = mx[ i ][ 1 ]; 
+		relvolume = (absVolume - VolAcum) / MaxVolume;
+		relbar3 = relvolume * (lvb-fvb+1);
+
+		x1 = x2;
+		x2 = x1 + relbar3;
+		GfxFillSolidRect( x1, y1, x2, y2, colorLightBlue );
+	}
+}
+Plot( C, "Price", colorDefault, styleCandle );

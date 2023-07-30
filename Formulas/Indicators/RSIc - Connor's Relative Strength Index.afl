@@ -1,0 +1,46 @@
+//Connor's RSI (Larry Connors).  Code for function provided by Connors Research
+
+paramLenRSI = Param("RSI Closes Length", 3, 2, 100, 1);
+paramLenUD = Param("RSI UpClose Length", 2, 2, 100, 1);
+paramLenRank = Param("PerecentRank Length", 100, 1, 200, 1);
+ob = Param("Over Bought", 70);
+md = Param("Middle", 50);
+os = Param("Over Sold", 30);
+
+function ConnorsRSI(lenRSI, lenUD, lenROC)
+{
+      upDays = BarsSince(C <= Ref(C,-1));
+      downDays = BarsSince(C >= Ref(C,-1));
+      updownDays = IIf(upDays > 0, upDays, IIf(downDays > 0, -downDays, 0));
+      crsi = ( PercentRank(ROC(C,1), lenROC) + RSIa(updownDays,lenUD) + RSI(lenRSI))/3;
+      return crsi;
+}
+
+connors_rsi = ConnorsRSI(paramLenRSI,paramLenUD,paramLenRank);
+_name = "ConnorsRSI("+paramLenRSI+","+paramLenUD+","+paramLenRank+")";
+
+Plot(connors_rsi, _name, ParamColor("Color", colorBlue), ParamStyle("Style"), 0, 100);
+PlotGrid(ob, colorWhite);
+PlotGrid(md, colorYellow);
+PlotGrid(os, colorWhite);
+
+/* Connors RSI is a composite indicator consisting of the mathematical 
+ summation of 3 components:
+1.	Price Momentum:  By default, ConnorsRSI uses a standard 3 period Wilder RSI for the 1st component.
+2.	Duration of Up Trend vs. Down Trend "Streak" days:  Connors research shows that the longer the number 
+of consecutive days up OR down, the more likely the security is likely to bounce when it reverts to the mean.  
+Likewise, the *magnitude* of the mean reversion snap-back is correlated with the streak length.  
+The 2nd indicator uses integer values to quantify the number of streak days, AND applies a default 
+2 Day Wilder RSI to this integer series.
+3.	Relative Magnitude of Price Change:  This 3rd component uses the PercentRank function over a 
+default value of 100 days (approx. 5 months) to measure price change as a percentage of the 
+previous Day's price, AND rank the current value over the lookback period.   Large positive returns 
+will have a rank closer to 100,  large negative returns will have a percent rank closer to 0. 
+
+The final oscillator takes this form (default values): 
+ConnorsRSI(3,2,100) = [RSI(Close,3) + RSI(Streak,2) + PercentRank(100)] / 3
+Connor's Research purports this robust indicator is more effective than any of the three components use 
+individually, AND in fact the blended effect of the mathematical summation allows the strong value from 
+one indicator to compensate for a slightly weaker value from another, in a way yielding superior results 
+than a voting system between the 3. 
+/*

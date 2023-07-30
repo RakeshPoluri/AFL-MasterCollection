@@ -1,0 +1,9 @@
+Chand_Pd = Param("Chandelier Periods", 5, 2, 500, 2);
+Chand_Fc = Param("Chandelier Multiple", 5, 0.5, 15, 0.25);
+
+chandelier = Chand_Fc*ATR(Chand_Pd);
+
+style = ParamStyle("Style");
+
+Plot(Close-chandelier, "Chandelier Long", ParamColor("Long Color", colorBrightGreen), style);
+Plot(Close+chandelier, "Chandelier Short", ParamColor("Short Color", colorRed), style);

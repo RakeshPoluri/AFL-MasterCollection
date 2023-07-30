@@ -1,0 +1,24 @@
+x_temp_est = 0;
+x_est_last = 0;
+P_temp = 0;
+P_last = 0;
+Q = 0.022;
+R = 0.617;
+P = (H +L)/ 2;
+z_real = EMA(EMA(P,3),3) ;
+x_est_last = z_real + TSF(P,3);
+
+for (i=0;i<BarCount;i++) 
+{
+x_temp_est = x_est_last;
+P_temp = P_last + Q;
+K = P_temp * (1.0/(P_temp + R));
+z_measured = z_real;
+x_est = x_temp_est + K * (z_measured - x_temp_est); 
+P = (1- K) * P_temp;
+P_last = P;
+x_est_last = x_est;
+
+}
+
+Plot(x_est, "Kalman Filter", colorGreen, styleLine|styleThick);

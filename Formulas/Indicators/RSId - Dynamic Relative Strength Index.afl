@@ -1,0 +1,40 @@
+_roc_period = Param("ROC Period", 5, 1, 200, 1);
+
+_roc = ROC(C, _roc_period);
+
+//_r_period = Param("Pearson R", 20, 1, 200, 1);
+
+_r_period = _roc_period;
+
+_r = Correlation(C, _roc, _r_period);
+
+_rsi_14 = RSI(14);
+_rsi_10 = RSI(10);
+_rsi_9 = RSI(9);
+_rsi_8 = RSI(8);
+_rsi_7 = RSI(7);
+_rsi_6 = RSI(6);
+_rsi_5 = RSI(5);
+_rsi_4 = RSI(4);
+_rsi_3 = RSI(3);
+_rsi_2 = RSI(2);
+
+_rsi = IIf(_r >= -1 AND _r < 0.1, _rsi_14,
+IIf(_r >= 0.1 AND _r < 0.2, _rsi_10,
+IIf(_r >= 0.2 AND _r < 0.3, _rsi_9,
+IIf(_r >= 0.3 AND _r < 0.4, _rsi_8,
+IIf(_r >= 0.4 AND _r < 0.5, _rsi_7,
+IIf(_r >= 0.5 AND _r < 0.6, _rsi_6,
+IIf(_r >= 0.6 AND _r < 0.7, _rsi_5,
+IIf(_r >= 0.7 AND _r < 0.8, _rsi_4,
+IIf(_r >= 0.8 AND _r < 0.9, _rsi_3,
+IIf(_r >= 0.9 AND _r <= 1, _rsi_2, _rsi_2))))))))));
+
+ob = Param("Over Bought", 70);
+md = Param("Middle", 50);
+os = Param("Over Sold", 30);
+
+Plot( _rsi, "Dynamic RSI("+_roc_period+","+_r_period+")", ParamColor( "Color", colorBrightGreen ), ParamStyle("Style")  );
+PlotGrid(ob, colorWhite);
+PlotGrid(md, colorYellow);
+PlotGrid(os, colorWhite);

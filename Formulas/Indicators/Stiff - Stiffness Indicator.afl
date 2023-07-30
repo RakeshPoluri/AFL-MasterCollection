@@ -1,0 +1,16 @@
+function Stiffness(value_array, moving_average_length, lookback_length)
+{
+     stiffness_ma = MA(value_array, moving_average_length) - 0.2*StDev(value_array, moving_average_length);
+     percent_above = Sum(value_array > stiffness_ma, lookback_length);
+     stiffness_ret = 100*(percent_above/lookback_length);
+     stiffness_ret = EMA(stiffness_ret, 3);
+     return stiffness_ret;
+}
+
+P = ParamField("Price field",-1);
+Periods = Param("MA Periods", 15, 2, 300, 1 );
+Lookback = Param("Lookback Periods", 15, 2, 300, 1 );
+
+stiff = Stiffness(P, Periods, Lookback);
+
+Plot( stiff, _DEFAULT_NAME(), ParamColor( "Color", colorBrightGreen ), ParamStyle("Style", styleLine, maskAll) );

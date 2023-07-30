@@ -1,0 +1,7 @@
+P = ParamField("Price field", -1 );
+
+period = Param("Value", 0, -100, 100);
+color_1 = ParamColor("Color 1", colorBrightGreen);
+color_2 = ParamColor("Color 2", colorRed);
+
+Plot(P, "Line Color", IIf(P > period, color_1, color_2), ParamStyle("Style", styleLine, maskAll));

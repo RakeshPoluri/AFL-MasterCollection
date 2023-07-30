@@ -1,0 +1,11 @@
+SetChartOptions(0, chartShowArrows | chartShowDates);
+
+Field = ParamField("Price field",-1);
+Periods = Param("Periods", 10, 2, 300, 1);
+Factor = Param("Factor", 1, 0, 10, 0.05);
+Average_Color = ParamColor("Average Color", colorCycle);
+Band_Color = ParamColor("Band Color", colorCycle);
+
+Plot(MA(Field, Periods), _DEFAULT_NAME(), Average_Color, ParamStyle("Style")|styleNoTitle); 
+Plot(MA(Field, Periods) + (Factor * ATR(Periods)), "Upper Band", Band_Color, ParamStyle("Style")|styleNoTitle); 
+Plot(MA(Field, Periods) - (Factor * ATR(Periods)), "Lower Band", Band_Color, ParamStyle("Style")|styleNoTitle); 

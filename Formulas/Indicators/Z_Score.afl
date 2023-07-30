@@ -1,0 +1,7 @@
+Field = ParamField("Field", -1);
+Period = Param("Periods", 22, 1, 100, 1);
+
+Z_Score = ( Field - MA(Field, Period) ) / StDev(Field, Period, False);
+
+Plot(Z_Score, "Z-Score (" + Period + ")", ParamColor("Color", colorBlue), ParamStyle("Style"));
+PlotGrid(0, colorYellow);

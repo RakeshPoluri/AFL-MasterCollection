@@ -1,0 +1,35 @@
+#include <CustomFuncs.afl>
+
+NewDay		= Day() != Ref(Day(),-1);
+StartTime	= ValueWhen(NewDay, TimeNum()); 
+
+bar_interval = Interval()/60;
+number_bars = 375 / bar_interval;
+
+lookback	= Param("Lookback Period", 21, 2);
+up			= Param("Upper Level", 1.25, 1, 2, 0.05);
+dn			= Param("Lower Level", 0.8, 0, 1, 0.05);
+
+Min_String = Minute_Strings(bar_interval);
+
+i_all = 0;
+
+for( i = 0; i < number_bars; i++ )
+{
+	VarSet("i"+i, 0);
+	time_candle = StrToNum(StrExtract( Min_String, i))*100;
+	candle_time = TimeNum()==time_candle;
+	for( j = 0; j < lookback; j++ )
+	{
+		VarSet("i"+i, VarGet("i"+i) + IIf(candle_time, Ref(Volume, -(number_bars*j)), 0));
+	}
+	i_all = i_all + VarGet("i"+i);
+}
+
+rvol = (Volume / (i_all/lookback));
+
+rvol_color = IIf(rvol > up, colorGreen, IIf(rvol < dn, colorRed, colorGold));
+
+Plot(rvol, "RVOL", rvol_color, styleHistogram|styleThick);
+PlotGrid(up, colorGreen);
+PlotGrid(dn, colorRed);

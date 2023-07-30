@@ -1,0 +1,10 @@
+_param = Param("First Param", 5, 1, 500, 1 );
+Periods = Param("Second Param", 21, 1, 500, 1 );
+
+_ttr = ATR(_param);
+
+_atr = ATR(Periods);
+
+vr = _ttr / _atr;
+
+Plot( vr, "Custom Volatilty Ratio (" + _param + "," + Periods + ")", ParamColor( "Color", colorBrightGreen ), ParamStyle("Style") ); 

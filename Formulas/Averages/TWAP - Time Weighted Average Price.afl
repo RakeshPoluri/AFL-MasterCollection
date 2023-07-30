@@ -1,0 +1,22 @@
+newday = Day() != Ref(Day(),-1);
+starttime = ValueWhen(newday, TimeNum()); 
+
+function twap_func()
+{
+	Bars_so_far_today = 1 + BarsSince( newday );
+	StartBar = ValueWhen(TimeNum() == starttime, BarIndex());
+
+	TodayClose = Sum(C,Bars_so_far_today);
+	TodayHigh = Sum(H,Bars_so_far_today);
+	TodayLow = Sum(L,Bars_so_far_today);
+	TodayOpen = Sum(O,Bars_so_far_today);
+
+	TWAP = (TodayClose + TodayHigh + TodayLow + TodayOpen)/4 ;
+
+	IIf (BarIndex() >= StartBar, ATWAP = TWAP / Bars_so_far_today,0);
+	return ATWAP;
+}
+
+_twap = twap_func();
+
+Plot(_twap, "TWAP", ParamColor( "Color", colorCycle ), ParamStyle("Style") );

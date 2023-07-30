@@ -1,0 +1,12 @@
+P1 = ParamField("Field 1", 0);
+P2 = ParamField("Field 2", 1);
+
+Mode = ParamToggle("Mode", "Difference (Symbol1-Symbol2)|Ratio (Symbol1/Symbol2)");
+
+Color = ParamColor( "Color", colorDefault );
+Style = ParamStyle( "Style", styleLine, maskPrice );
+
+if( Mode == 0 )
+ Plot( P1-P2, "(" + P1 +" - "+ P2 + ") spread", Color, style );
+else
+ Plot( P1/P2, "(" + P1 +" - "+ P2 + ") spread", Color, style );

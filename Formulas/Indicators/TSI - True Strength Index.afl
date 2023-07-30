@@ -1,0 +1,14 @@
+_long = Param("Long Length", 21, 1, 100, 1);
+_short = Param("Short Length", 9, 1, 100, 1);
+_sig = Param("Signal Length", 9, 1, 100, 1);
+
+Mtm = C - Ref(C, -1);
+AbsMtm = abs(Mtm);
+Num_T = EMA(EMA(Mtm, _long), _short);
+Den_T = EMA(EMA(AbsMtm, _long), _short);
+
+TSI = 100 * Nz(Num_T / Den_T);
+
+Plot(TSI, "TSI(" + _long + "," + _short + ")", ParamColor("Color", colorBlue), ParamStyle("Style"));
+Plot(EMA(TSI, _sig), "", colorRed);
+PlotGrid(0, colorYellow);

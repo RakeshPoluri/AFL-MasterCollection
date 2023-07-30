@@ -1,0 +1,20 @@
+period_d = Param("Daily Periods", 15, 2, 300, 1, 10 );
+color_d = ParamColor( "Daily Color", colorRed );
+period_w = Param("Weekly Periods", 15, 2, 300, 1, 10 );
+color_w = ParamColor( "Weekly Color", colorBlue );
+
+wc = TimeFrameCompress( Close, inWeekly );
+
+/* now the time frame is still unchanged (say daily) and our MA will operate on daily data */
+
+dailyma = EMA( C, period_d );
+
+/* but if we call MA on compressed array, it will give MA from other time frame */
+
+weeklyma = EMA( wc, period_w ); // note that argument is time-compressed array
+
+Plot( dailyma, "DailyMA", color_d );
+
+weeklyma = TimeFrameExpand( weeklyma, inWeekly ); // expand for display
+
+Plot( weeklyma, "WeeklyMA", color_w );

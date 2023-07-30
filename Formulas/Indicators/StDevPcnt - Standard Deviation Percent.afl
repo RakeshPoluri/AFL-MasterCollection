@@ -1,0 +1,8 @@
+P = ParamField("Price field", -1 );
+Periods = Param("Periods", 14, 2, 300, 1 );
+
+_std = StDev(P, Periods );
+
+_std_pcnt = 100 * ( _std / P ) ;
+
+Plot( _std_pcnt, _DEFAULT_NAME(), ParamColor( "Color", colorCycle ), ParamStyle("Style") );

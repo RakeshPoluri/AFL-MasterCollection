@@ -1,0 +1,38 @@
+BullQuiet_color = ParamColor("BullQ Color", colorBrightGreen);
+BullVolatile_color = ParamColor("BullV Color", colorGold);
+BearQuiet_color = ParamColor("BearQ Color", colorBlue);
+BearVolatile_color = ParamColor("BearV Color", colorRed);
+
+_short = Param("Short EMA Length", 5, 2, 10, 1);
+_long = Param("Long EMA Length", 135, 100, 300, 5);
+_period = Param("VIX Fix Periods", 21, 1, 100, 1);
+_length = ParamToggle("Percentile Length", "Short|Long", 1);
+_percentile = Param("Volatilty Percentile", 75, 5, 95, 5);
+
+if (_length == 0) _length_p = _short;
+if (_length == 1) _length_p = _long;
+
+_shortma = EMA(Close, _short);
+_longma = EMA(Close, _long);
+WVF = ( HHV ( Close, _period ) - Low ) / ( HHV ( Close, _period ) ) * 100;
+
+Bull = _shortma >= _longma;
+Bear = _shortma < _longma;
+Quiet = WVF <= Percentile(WVF, _length_p, _percentile);
+Volatile = WVF > Percentile(WVF, _length_p, _percentile);
+
+BullQuiet = Bull AND Quiet;
+BullVolatile = Bull AND Volatile;
+BearQuiet = Bear AND Quiet;
+BearVolatile = Bear AND Volatile;
+
+CandleBodyColor = IIf(BullQuiet, BullQuiet_color, IIf(BullVolatile, BullVolatile_color, IIf(BearQuiet, BearQuiet_color, IIf(BearVolatile, BearVolatile_color, colorDefault))));
+
+SetBarFillColor(CandleBodyColor);
+
+//CandleWickColor = IIf(C>O,colorBrightGreen,IIf(C < O,colorRed, colorWhite));
+CandleWickColor = CandleBodyColor;
+
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+Plot( C, "Close", CandleWickColor, styleCandle|styleNoTitle,Null,Null,0,0,5 );

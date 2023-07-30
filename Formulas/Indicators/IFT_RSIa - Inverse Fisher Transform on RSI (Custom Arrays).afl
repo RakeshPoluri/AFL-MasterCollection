@@ -1,0 +1,17 @@
+#include <CustomFuncs.afl>
+
+P = ParamField("Price field",-1);
+
+_rsi = Param("RSI Periods", 5, 2, 500, 1);
+
+_wma = Param("Smoothening Length", 9, 2, 50, 1);
+
+lvl = Param("Level", 0.5, 0, 0.95, 0.05);
+
+rsi_ift = IFT_RSIa(P, _rsi, _wma);
+
+Plot(rsi_ift, "IFT-RSI", colorRed, styleThick );
+_shift = Ref(rsi_ift,-1);
+Plot(_shift, "", colorLightBlue);
+PlotGrid( lvl, colorGreen );
+PlotGrid(-lvl, colorGreen );

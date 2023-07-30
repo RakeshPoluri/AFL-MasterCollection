@@ -1,0 +1,4 @@
+P1 = ParamField("Field 1", 3 );
+P2 = ParamField("Field 2", -1 );
+
+Plot(P1-P2, "Difference of Lines", ParamColor("Color", colorBrightGreen), ParamStyle("Style", styleLine, maskAll));

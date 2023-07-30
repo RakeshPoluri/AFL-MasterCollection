@@ -1,0 +1,16 @@
+#include <CustomFuncs.afl>
+
+P = ParamField( "Price field", -1 );
+
+_1_periods = Param("1 Periods", 5, 1, 500, 1 );
+_1_type = ParamList("1 Type", "SMA|EMA|AMA|AMA2|LSMA|HMA|DEMA|TEMA|ZLEMA|TSF|VMA|WMA|Wilders", 1);
+
+_2_periods = Param("2 Periods", 10, 1, 500, 1 );
+_2_type = ParamList("2 Type", "SMA|EMA|AMA|AMA2|LSMA|HMA|DEMA|TEMA|ZLEMA|TSF|VMA|WMA|Wilders", 1);
+
+_3_periods = Param("3 Periods", 30, 1, 500, 1 );
+_3_type = ParamList("3 Type", "SMA|EMA|AMA|AMA2|LSMA|HMA|DEMA|TEMA|ZLEMA|TSF|VMA|WMA|Wilders", 1);
+
+Plot( Average(_1_type, P, _1_periods), _DEFAULT_NAME(), ParamColor( "1 Color", colorCycle ), ParamStyle("1 Style")  );
+Plot( Average(_2_type, P, _2_periods), _DEFAULT_NAME(), ParamColor( "2 Color", colorCycle ), ParamStyle("2 Style")  );
+Plot( Average(_3_type, P, _3_periods), _DEFAULT_NAME(), ParamColor( "3 Color", colorCycle ), ParamStyle("3 Style")  );

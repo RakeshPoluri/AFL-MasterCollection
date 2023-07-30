@@ -1,0 +1,7 @@
+#include <myFuncs.afl>  // ParamOpt
+
+P = ParamField("Price field", -1 );
+
+ift = InvFisherTfm(P);
+
+Plot(ift, "Inverse Fisher Transform", ParamColor("Color", colorBrightGreen), ParamStyle("Style"));

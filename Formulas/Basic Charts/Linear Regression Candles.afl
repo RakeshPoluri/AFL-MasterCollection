@@ -1,0 +1,34 @@
+signal_length	= Param("Signal Smoothing", 7, 1, 200, 1);
+sma_signal		= Param("Simple MA (Signal Line) 1=SMA, 0=EMA", 1, 0, 1, 1);
+
+lin_reg			= Param("Lin Reg = 1, Normal = 0", 1, 0, 1, 1);
+linreg_length	= Param("Linear Regression Length", 11, 1, 200, 1);
+
+if (lin_reg == 1) {
+	bopen	= LinearReg(Open, linreg_length);
+	bhigh	= LinearReg(High, linreg_length);
+	blow	= LinearReg(Low, linreg_length);
+	bclose	= LinearReg(Close, linreg_length);
+}
+else {
+	bopen	= Open;
+	bhigh	= High;
+	blow	= Low;
+	bclose	= Close;
+}
+
+r = IIf(bopen < bclose, colorBrightGreen, colorRed);
+
+if (sma_signal == 1) {
+	_signal = MA(bclose, signal_length);
+}
+else {
+	_signal = EMA(bclose, signal_length);
+}
+
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", bopen, bhigh, blow, bclose, SelectedValue( ROC( bclose, 1 ) ) ));
+//Plot( C, "Close", ParamColor("Color", colorDefault ), styleNoTitle | ParamStyle("Style") | GetPriceStyle() );
+PlotOHLC(bopen, bhigh, blow, bclose, "", r, styleNoTitle | ParamStyle("Style") | GetPriceStyle());
+
+plot(_signal, "Signal", colorWhite);

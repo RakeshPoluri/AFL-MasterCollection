@@ -1,0 +1,5 @@
+period = Param("Periods", 21, 0, 1000);
+
+cmf = Sum(IIf( H > L AND V > 0, (((C - L) - (H - C)) / (H - L)) * V, 0), period) / Sum(V, period);
+
+Plot(cmf, "Chaikin Money Flow ("+period+")", ParamColor( "Color", colorCycle ), ParamStyle("Style") );

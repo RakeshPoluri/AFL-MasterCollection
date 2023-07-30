@@ -1,0 +1,24 @@
+function funcCMO(periods)
+{
+	local cmo_1;
+	local cmo_2;
+	local cmo;
+
+	cmo_1 = Sum(IIf(C > Ref(C, -1), (C - Ref(C, -1)), 0), periods);
+	cmo_2 = Sum(IIf(C < Ref(C, -1), (Ref(C, -1) - C), 0), periods);
+	cmo = 100 * (( cmo_1 - cmo_2) /( cmo_1 + cmo_2));
+	return cmo;
+}
+
+_period = Param("Periods", 21, 2, 500, 1);
+
+_trigger = Param("Trigger", 9, 2, 500, 1);
+
+cmo = funcCMO(_period);
+Plot(cmo,_DEFAULT_NAME(),IIf(cmo > Ref(cmo, -1), 5, 4), 2|styleThick);
+Plot(MA(cmo, _trigger), "Trigger", colorLightOrange);
+//PlotGrid(50, colorYellow);
+PlotGrid(0, colorYellow);
+//PlotGrid(-50, colorYellow);
+
+//Title="CMO" + WriteVal(cmo)+" Trigger"+ WriteVal(MA(cmo, _trigger));

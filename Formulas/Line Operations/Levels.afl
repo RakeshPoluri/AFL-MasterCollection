@@ -1,0 +1,18 @@
+osc = ParamToggle("Oscillator?", "Yes|No", 1);
+sym = ParamToggle("Symmetry?", "Yes|No", 0);
+
+if(osc==0)
+{
+	PlotGrid(50, ParamColor("Color - Mid Line", colorYellow));
+	lvl_lo = Param("Level - Lo", 30, -100, 100, 5);
+	lvl = Param("Level - Hi", 100, -100, 100, 5);
+	if(sym == 0) lvl_hi = 100 - lvl_lo;
+	if(sym == 1) lvl_hi = lvl;
+	PlotGrid(lvl_lo, ParamColor("Color - Lo Line", colorYellow));
+	PlotGrid(lvl_hi, ParamColor("Color - Hi Line", colorYellow));
+}
+else
+{
+	lvl = Param("Level - 1 Line", 0, -100, 100, 5);
+	PlotGrid(lvl, ParamColor("Color - 1 Line", colorYellow));
+}

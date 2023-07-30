@@ -1,0 +1,12 @@
+function VWMA( price, pds )
+{
+    aa = Sum( ( Volume * price ), pds );
+    bb = Sum( Volume, pds );
+    Cc = aa / Nz( bb );
+    return Cc;
+}
+
+P = ParamField("Price field",-1);
+Periods = Param("Periods", 15, 2, 300, 1, 10 );
+
+Plot( VWMA( P, Periods ), _DEFAULT_NAME(), ParamColor( "Color", colorWhite ), ParamStyle("Style") ); 

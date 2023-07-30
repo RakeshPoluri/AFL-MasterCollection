@@ -1,0 +1,82 @@
+function Trend_Follower(ma_type, period, mult)
+{
+	global ohlc4;
+	hl = (H-L);
+	ohlc4 = (O+H+L+C)/4;
+
+	if( ma_type == "AMA" )		_ma = AMA( hl, 2/(period + 1) );
+	if( ma_type == "AMA2" )		_ma = AMA2( hl, 2/(period + 1), 1 - (2/(period + 1)) );
+	if( ma_type == "SMA" )		_ma = MA( hl, period );
+	if( ma_type == "EMA" )		_ma = EMA( hl, period );
+	if( ma_type == "HMA" )		_ma = HMA( hl, period );
+	if( ma_type == "DEMA" )		_ma = DEMA( hl, period );
+	if( ma_type == "TEMA" )		_ma = TEMA( hl, period );
+	if( ma_type == "Wilders" )	_ma = Wilders( hl, period );
+	if( ma_type == "WMA" )		_ma = WMA( hl, period );
+	if( ma_type == "LSMA" )		_ma = LinearReg( hl, period );
+	if( ma_type == "TSF" )		_ma = TSF( hl, period );
+
+	ma_mult = mult * _ma;
+	trend = 1;
+	Array = 0;
+	Array[0] = 0;
+
+	num = 1;
+
+	while (num <= BarCount - 1)
+	{
+		if (trend[num - 1] == 1.0)
+		{
+			if (ohlc4[num] < Array[num - 1])
+			{
+				trend[num] = -1;
+				Array[num] = ohlc4[num] + ma_mult[num];
+			}
+			else
+			{
+				trend[num] = 1;
+				if (ohlc4[num] - ma_mult[num] > Array[num - 1])
+					Array[num] = ohlc4[num] - ma_mult[num];
+				else
+					Array[num] = Array[num - 1];
+			}
+		}
+		if (trend[num - 1] == -1.0)
+		{
+			if (ohlc4[num] > Array[num - 1])
+			{
+				trend[num] = 1;
+				Array[num] = ohlc4[num] - ma_mult[num];
+			}
+			else
+			{
+				trend[num] = -1;
+				if (ohlc4[num] + ma_mult[num] < Array[num - 1])
+					Array[num] = ohlc4[num] + ma_mult[num];
+				else
+					Array[num] = Array[num - 1];
+			}
+		}
+		num++;
+	}
+	return Array;
+}
+
+_period = Param("Period", 4, 2, 100, 1);
+_period = Optimize("Period", _period, 5, 100, 5);
+
+_multiple = Param("Multiple", 2, 0.25, 5, 0.25);
+_multiple = Optimize("Multiple", _multiple, 0.25, 3, 0.25);
+
+type_ma = ParamList("MA Type", "SMA|EMA|AMA|AMA2|LSMA|HMA|DEMA|TEMA|TSF|WMA|Wilders", 9);
+
+_array = Trend_Follower(type_ma, _period, _multiple);
+
+trend_up = ohlc4 > _array;
+trend_dn = ohlc4 < _array;
+
+//Plot(_array, "Array", IIf(trend==1, colorYellow, colorPaleBlue));
+Plot(IIf(trend_up, _array, Null), "Trend Up", ParamColor("Trend Up Color", colorYellow), ParamStyle("Trend Up Style"));
+Plot(IIf(trend_dn, _array, Null), "Trend Dn", ParamColor("Trend Dn Color", colorPaleBlue), ParamStyle("Trend Dn Style"));
+PlotShapes(IIf(ExRem(trend_up, trend_dn), shapeSmallCircle, 0), colorYellow, 0.0, _array, 0);
+PlotShapes(IIf(ExRem(trend_dn, trend_up), shapeSmallCircle, 0), colorPaleBlue, 0.0, _array, 0);

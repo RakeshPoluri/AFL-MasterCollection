@@ -1,0 +1,12 @@
+SetChartOptions(0,chartShowArrows|chartShowDates);
+
+_add = Param("Value", 10000, 1000, 10000000, 1000);
+
+_add = IIf(Month() != Ref(Month(), -1), _add, 0);
+
+_add = Cum(Ref(_add, -1));
+
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}}  SIP %g (%.1f%%) {{VALUES}}", _add, SelectedValue( ROC( _add, 1 ) ) ));
+
+Plot(_add,"SIP",colorPaleTurquoise,styleThick);
+//Plot(BH,"Buy&Hold",colorBlue,styleThick);

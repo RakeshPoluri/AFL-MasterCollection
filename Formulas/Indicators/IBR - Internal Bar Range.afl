@@ -1,0 +1,3 @@
+IBR = (Close - Low) / (High - Low);
+
+Plot( IBR, _DEFAULT_NAME(), ParamColor( "Color", colorBrightGreen ), ParamStyle("Style") );

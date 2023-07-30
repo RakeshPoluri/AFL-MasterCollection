@@ -1,0 +1,4 @@
+P = ParamField("Price field", -1 );
+Periods = Param("Periods", 0, -300, 300, 1 );
+
+Plot(P+Periods, "Add/Subtract from Line", ParamColor("Color", colorBrightGreen), ParamStyle("Style"));

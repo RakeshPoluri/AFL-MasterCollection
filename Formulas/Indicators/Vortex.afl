@@ -1,0 +1,15 @@
+#include <CustomFuncs.afl>
+
+period = Param("Period", 14, 2, 1000, 1 );
+
+//VMP = Sum( abs( H - Ref( L, -1 ) ), period );
+//VMM = Sum( abs( L - Ref( H, -1 ) ), period );
+//STR = Sum( ATR( 1 ), period );
+
+//VIP = VMP / STR;
+//VIM = VMM / STR;
+
+Vortex(period);
+
+Plot( VIP, "VI+", ParamColor("VI+", colorBlue), ParamStyle("Style"));
+Plot( VIM, "VI-", ParamColor("VI-", colorRed), ParamStyle("Style"));

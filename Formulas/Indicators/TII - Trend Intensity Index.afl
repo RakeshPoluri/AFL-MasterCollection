@@ -1,0 +1,36 @@
+P = ParamField("Price field",-1);
+Major = Param("Major Periods", 14, 2, 300, 1);
+Minor = Param("Minor Periods", 7, 2, 300, 1);
+b_signal = ParamToggle("Plot Signal?", "True|False", 1 );
+p_signal = Param("Signal", 9, 2, 300, 1 );
+ob = Param("OverBought", 80, 50, 95, 5);
+os = Param("OverSold", 20, 5, 50, 5);
+color = ParamToggle("Color OB/OS?", "Yes|No", 1);
+style = ParamStyle("TII Style", styleThick);
+
+sma = MA( P, Major );
+
+Dev = P - sma;
+Pos_Dev = IIf(Dev>0, Dev, 0);
+Neg_Dev = IIf(Dev<0, abs(Dev), 0);
+
+SDPos = Sum(Pos_Dev, Minor); //floor(Major/2));
+SDNeg = Sum(Neg_Dev, Minor); //floor(Major/2));
+
+TII = 100 * (SDPos / (SDPos + SDNeg));
+
+TII_Signal = EMA(TII, p_signal);
+
+tiiColor = IIf(tii > ob, colorBrightGreen, IIf(tii < os, colorRed, colorOrange));
+
+if(color==1) Plot(TII, "Trend Intenisty Index ("+Major+","+Minor+")", colorBrightGreen, style); 
+if(color==0) {
+Plot(TII, "Trend Intenisty Index ("+Major+","+Minor+")", tiiColor, style);
+PlotOHLC( TII, TII, 50, TII, "", IIf( TII > 50, colorPaleGreen, colorPink), styleCloud | styleClipMinMax|styleNoLabel|styleNoTitle, os, ob ); 
+}
+
+if(b_signal == 0) Plot( TII_Signal, "Signal ("+p_signal+")", colorBlue, ParamStyle("Signal Style") );
+
+PlotGrid(ob, colorPaleBlue);
+PlotGrid(50, colorPaleBlue);
+PlotGrid(os, colorPaleBlue);

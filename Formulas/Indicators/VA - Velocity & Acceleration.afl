@@ -1,0 +1,9 @@
+src = ParamField("Price field",-1);
+period = Param("Period", 1);
+
+Velocity = src - Ref(src, -period);
+
+Acceleration = Velocity - Ref(Velocity, -period);
+
+Plot(Velocity, "Velocity", ParamColor( "Velocity Color", colorBrightGreen ), ParamStyle("Velocity Style", styleLine, maskAll) ); 
+Plot(Acceleration, "Acceleration", ParamColor( "Acceleration Color", colorRed ), ParamStyle("Acceleration Style", styleLine, maskAll) ); 

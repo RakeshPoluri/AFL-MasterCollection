@@ -1,0 +1,463 @@
+_SECTION_BEGIN("Functions");
+
+function ParamOpt(Name_val, default_val, minimum_val, maximum_val, step_val) {
+	array = Param(Name_val, default_val, minimum_val, maximum_val, step_val);
+	array = Optimize(Name_val, array, minimum_val, maximum_val, step_val);
+	
+	return array;
+}
+
+function ConnorsRSI(lenRSI, lenUD, lenROC)
+{
+      upDays = BarsSince(C <= Ref(C,-1));
+      downDays = BarsSince(C >= Ref(C,-1));
+      updownDays = IIf(upDays > 0, upDays, IIf(downDays > 0, -downDays, 0));
+      crsi = ( PercentRank(ROC(C,1), lenROC) + RSIa(updownDays,lenUD) + RSI(lenRSI))/3;
+      return crsi;
+}
+
+function InvFisherTfm( array )
+{
+  e2y = exp( 2 * array );
+  return ( e2y - 1 )/( e2y + 1 );
+}
+
+function SWMA( array )
+{
+	_swma = (Ref(array, -3) * 1 / 6) + (Ref(x, -2) * 2 / 6) + (Ref(x, -1) * 2 / 6) + (array * 1 / 6);
+	return _swma;
+}
+
+function ALMA(array, windowSize, sigma, Offset)
+{
+	m = floor(Offset * (windowSize - 1));
+	s = windowSize / sigma;
+
+	w = 0;
+	wSum = 0;
+
+	for(i = 1; i < windowSize; i++)
+	{
+		w[i] = exp(-((i-m)*(i-m))/(s*s)); // 2 should be there?
+		wSum += w[i];
+	}
+
+	for(i = 1; i < windowSize; i++)
+	{
+		w[i] = w[i] / wSum;
+	}
+
+	outalma = Null;
+
+	for(j = 0; j < BarCount; j++)
+	{
+		alSum = 0;
+
+		if(j < windowSize)
+		{
+			outalma[j] = Null;
+		}
+		else
+		{
+			for(i = 1; i < windowSize; i++)
+			{
+				alSum += array[j - (windowSize - 1 - i)] * w[i];
+			}
+
+			outalma[j] = alSum;
+		}
+	}
+	
+	return outalma;
+}
+
+function ZLEMA(array, range) {
+	Lag = (range - 1) / 2;
+	_ema = (array + (array - Ref(array, -Lag)));
+	
+	return EMA(_ema, range);
+}
+
+function SuperTrend(Pd, Fr)
+{
+	global trend;
+	_ATR = ATR(Pd);
+	Up=(H+L)/2+(Fr*_ATR);
+	Dn=(H+L)/2-(Fr*_ATR);
+	iATR=_ATR;
+	ST=Null;
+	trend[0]=1;
+	changeOfTrend=0;
+	flag=flagh=0;	
+	for (i = 1; i <BarCount; i++)
+	{
+		ST[i] = Null;
+		trend[i]=1;		
+		if (C[i]>Up[i-1])
+		{
+			trend[i]=1;
+			if (trend[i-1] == -1) changeOfTrend = 1;
+		}
+		else if (C[i]<Dn[i-1])
+		{
+			trend[i]=-1;
+			if (trend[i-1] == 1) changeOfTrend = 1;
+		}
+		else if (trend[i-1]==1)
+		{
+			trend[i]=1;
+			changeOfTrend = 0;
+		}
+		else if (trend[i-1]==-1)
+		{
+			trend[i]=-1;
+			changeOfTrend = 0;
+		}
+		if (trend[i]<0 && trend[i-1]>0) flag=1;
+		else flag=0;
+		if (trend[i]>0 && trend[i-1]<0) flagh=1;
+		else flagh=0;
+		if (trend[i]>0 && Dn[i]<Dn[i-1]) Dn[i]=Dn[i-1];
+		if (trend[i]<0 && Up[i]>Up[i-1]) Up[i]=Up[i-1];
+		if (flag==1) Up[i]=(H[i]+L[i])/2+(Fr*iATR[i]);
+		if (flagh==1) Dn[i]=(H[i]+L[i])/2-(Fr*iATR[i]);
+		if (trend[i]==1)
+		{
+			ST[i]=Dn[i];
+			if (changeOfTrend == 1) changeOfTrend = 0;
+		}
+		else if (trend[i]==-1)
+		{
+			ST[i]=Up[i];
+			if (changeOfTrend == 1) changeOfTrend = 0;
+		}
+	}
+	return ST;
+}
+
+function SuperTrend_Custom(_H, _L, _C, lenATR, width)
+{
+	global isUpTrend;
+    H_L				= _H - _L;
+	H_C				= abs(_H - Ref(_C, -1));
+	L_C				= abs(_L - Ref(_C, -1));
+	_TR				= Max(H_L, Max(H_C, L_C));
+	nATR			= Wilders(_TR, lenATR);
+    Up				= (_H+_L)/2+(width*nATR);
+	Dn				= (_H+_L)/2-(width*nATR);
+	iATR			= nATR;
+	super			= Null;
+	isUpTrend[0]	= 1;
+	changeOfTrend	= 0;
+	flag = flagh	= 0;	
+	for (i = 1; i <BarCount; i++)
+	{
+		super[i] = Null;
+		isUpTrend[i] = 1;		
+		if (_C[i] > Up[i - 1])
+		{
+			isUpTrend[i] = 1;
+			if (isUpTrend[i - 1] == -1) changeOfTrend = 1;
+		}
+		else if (_C[i] < Dn[i - 1])
+		{
+			isUpTrend[i] = -1;
+			if (isUpTrend[i - 1] == 1) changeOfTrend = 1;
+		}
+		else if (isUpTrend[i - 1] == 1)
+		{
+			isUpTrend[i] = 1;
+			changeOfTrend = 0;
+		}
+		else if (isUpTrend[i - 1] == -1)
+		{
+			isUpTrend[i] = -1;
+			changeOfTrend = 0;
+		}
+		if (isUpTrend[i] < 0 && isUpTrend[i - 1] > 0) flag = 1;
+		else flag = 0;
+		if (isUpTrend[i] > 0 && isUpTrend[i - 1] < 0) flagh = 1;
+		else flagh = 0;
+		if (isUpTrend[i] > 0 && Dn[i] < Dn[i - 1]) Dn[i] = Dn[i - 1];
+		if (isUpTrend[i] < 0 && Up[i] > Up[i - 1]) Up[i] = Up[i - 1];
+		if (flag == 1) Up[i] = (_H[i] + _L[i]) / 2 + (width * iATR[i]);
+		if (flagh == 1) Dn[i] = (_H[i] + _L[i]) / 2 - (width * iATR[i]);
+		if (isUpTrend[i] == 1)
+		{
+			super[i] = Dn[i];
+			if (changeOfTrend == 1) changeOfTrend = 0;
+		}
+		else if (isUpTrend[i] == -1)
+		{
+			super[i] = Up[i];
+			if (changeOfTrend == 1) changeOfTrend = 0;
+		}
+	}
+	return super;
+}
+
+function JurikMA(array, range)
+{
+	SetBarsRequired(50);
+	
+	phase = 50;
+	power = 2;
+
+	//phaseRatio = phase < -100 ? 0.5 : phase > 100 ? 2.5 : phase / 100 + 1.5
+
+	phaseRatio = IIf(phase < -100, 0.5, IIf(phase > 100, 2.5, (phase/100) + 1.5));
+
+	beta = 0.45 * (range - 1) / (0.45 * (range - 1) + 2);
+
+	alpha = beta ^ power;
+
+	e0 = AMA(array, (1-alpha));
+	e1 = AMA((array-e0), (1-beta));
+
+	e2 = 0.0 * Close;
+	jma = 0.0 * Close;
+
+	for( bar = 1; bar < BarCount; bar++ )
+	{
+		e2[bar] = (e0[bar] + phaseRatio * e1[bar] - jma[bar - 1]) * (1 - alpha)^2 + alpha^2 * e2[bar - 1];
+		jma[bar] = e2[bar] + jma[bar - 1];
+	}
+	
+	return jma;
+}
+
+function VariableMA(array, range)
+{
+	k = 1.0 / range;
+	pdm = Max((array - Ref(array, -1)), 0);
+	mdm = Max((Ref(array, -1) - array), 0);
+	pdmS = AMA(pdm, k);
+	mdmS = AMA(mdm, k);
+
+	s = pdmS + mdmS;
+	_pdi = pdmS / s;
+	_mdi = mdmS / s;
+	pdiS = AMA(_pdi, k);
+	mdiS = AMA(_mdi, k);
+
+	d = abs(pdiS - mdiS);
+	s1 = pdiS + mdiS;
+	iS = AMA((d/s1), k);
+
+	_hhv = HHV(iS, range);
+	_llv = LLV(iS, range);
+	d1 = _hhv - _llv;
+	vI = (iS - _llv) / d1;
+
+	vma = AMA(array, k*vI);
+	return vma;
+}
+
+function VWMA( array, range )
+{
+    aa = Sum( ( Volume * array ), range );
+    bb = Sum( Volume, range );
+    Cc = aa / Nz( bb );
+    return Cc;
+}
+
+function VWAP()
+{
+	NewDay = Day() != Ref(Day(),-1);
+	StartTime = ValueWhen(NewDay, TimeNum());
+	_interval = Interval(0) / 60;
+	FC_EndTime = StartTime + (_interval * 100);
+
+	Bars_so_far_today = 1 + BarsSince( NewDay );
+	StartBar = ValueWhen(TimeNum() == FC_EndTime, BarIndex());
+	TodayVolume = Sum(V,Bars_so_far_today);
+	_VWAP = IIf (BarIndex() >= StartBar, Sum(C * V, Bars_so_far_today) / TodayVolume,0);
+	return _VWAP;
+}
+
+function Average(ma_type, P, ma_periods)
+{
+	if( ma_type == "AMA" )		_ma = AMA( P, 2/(ma_periods + 1) );
+	if( ma_type == "AMA2" )		_ma = AMA2( P, 2/(ma_periods + 1), 1 - (2/(ma_periods + 1)) );
+	if( ma_type == "SMA" )		_ma = MA( P, ma_periods );
+	if( ma_type == "EMA" )		_ma = EMA( P, ma_periods );
+	if( ma_type == "HMA" )		_ma = HMA( P, ma_periods );
+	if( ma_type == "DEMA" )		_ma = DEMA( P, ma_periods );
+	if( ma_type == "TEMA" )		_ma = TEMA( P, ma_periods );
+	if( ma_type == "ZLEMA" )	_ma = ZLEMA(P, ma_periods);
+	if( ma_type == "Wilders" )	_ma = Wilders( P, ma_periods );
+	if( ma_type == "VMA" )		_ma = VariableMA( P, ma_periods );
+	if( ma_type == "WMA" )		_ma = WMA( P, ma_periods );
+	if( ma_type == "LSMA" )		_ma = LinearReg( P, ma_periods );
+	if( ma_type == "TSF" )		_ma = TSF( P, ma_periods );
+	if( ma_type == "JMA" )		_ma = JurikMA( P, ma_periods );
+	if( ma_type == "VWAP" )		_ma = VWAP();
+	if( ma_type == "VWMA" )		_ma = VWMA( P, ma_periods );
+	
+	return _ma;
+}
+
+function Vortex( period )
+{
+	VMP = Sum( abs( H - Ref( L, -1 ) ), period );
+	VMM = Sum( abs( L - Ref( H, -1 ) ), period );
+	STR = Sum( ATR( 1 ), period );
+
+	VIP = VMP / STR;
+	VIM = VMM / STR;
+	
+	VarSet( "VIP", VIP );
+	VarSet( "VIM", VIM );
+	
+	return;
+	
+}
+
+function SmoothedVortex( smoothing, period )
+{
+	_high = LinearReg(High, smoothing);
+	_low = LinearReg(Low, smoothing);
+	_close = LinearReg(Close, smoothing);
+
+	VMP = Sum( abs( _high - Ref( _low, -1 ) ), period );
+	VMM = Sum( abs( _low - Ref( _high, -1 ) ), period );
+
+	H_L = _high - _low;
+	H_C = abs(_high - Ref(_close, -1));
+	L_C = abs(_low - Ref(_close, -1));
+
+	TR = Max(H_L, Max(H_C, L_C));
+
+	STR = Sum( TR, period );
+
+	VIP = VMP / STR;
+	VIM = VMM / STR;
+	
+	VarSet( "VIP", VIP );
+	VarSet( "VIM", VIM );
+	
+	return;
+	
+}
+
+function Aroon( period )
+{
+	L14 = LLV( Low, period );
+	H14 = HHV( High, period );
+
+	AroonDown =
+	100* (14 - (( IIf(Ref(L,-1) == L14 ,1 , IIf( Ref(L ,-2 ) == L14 ,2 , IIf( Ref(L, -3 ) == L14 ,3 ,IIf( Ref(L ,-4 ) == L14 ,4 ,IIf(Ref( L ,-5 ) == L14 ,5 ,IIf(Ref(L ,-6 ) == L14 ,6 ,IIf( Ref(L ,-7 ) == L14 ,7 ,IIf(Ref( L ,-8 ) == L14 ,8 ,IIf(Ref( L ,-9) == L14 ,9 ,IIf( Ref(L,-10) == LLV(L,14 ) ,10 ,IIf(Ref(L ,-11) == L14 ,11,IIf(Ref(L,-12 ) == LLV(L ,14) ,12,IIf( Ref(L,-13) == LLV(L ,14 ) ,13 ,IIf( Ref( L,-14) == L14 ,14,0) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) / 14;
+
+	AroonUp =
+	100 * ( 14 - ( ( IIf(Ref(H ,-1) == H14 ,1 ,IIf(Ref(H ,-2 ) == H14 ,2 ,IIf(Ref(H
+	,- 3 ) == 
+	H14 ,3, IIf(Ref(H ,-4 ) == H14 ,4 ,IIf(Ref(H ,-5 ) == H14 ,5 ,IIf(Ref(H ,-6 )
+	== 
+	H14 ,6 ,IIf(Ref(H,-7 ) == H14 ,7 ,IIf(Ref(H ,-8 ) == H14 ,8 , IIf(Ref(H ,-9 )
+	== 
+	H14 ,9 ,IIf(Ref(H ,-10 ) == H14 ,10 ,IIf(Ref(H ,-11 ) == H14 ,11 ,IIf(Ref(H
+	,-12 ) == 
+	H14 ,12 ,IIf(Ref(H ,-13) == H14 ,13 ,IIf(Ref(H ,-14 ) == H14 ,14 ,0 ) ) ) ) ) )
+	) ) ) ) ) ) ) ) ) ) ) / 14;
+
+	AroonUp = 100 * (period - (HHVBars(H, period + 1))) / period;
+	AroonDn = 100 * (period - (LLVBars(L, period + 1))) / period;
+	
+	VarSet( "AroonUp", AroonUp );
+	VarSet( "AroonDn", AroonDn );
+	
+	return;
+}
+
+function IFT_RSI(_rsi, _wma)
+{
+	Value1 = 0.1 * ( RSI( _rsi ) - 50 );
+	Value2 = WMA( Value1, _wma );
+	x = InvFisherTfm( Value2 );
+	
+	return x;
+}
+
+function IFT_RSIa(P, _rsi, _wma)
+{
+	Value1 = 0.1 * ( RSIa(P, _rsi ) - 50 );
+	Value2 = WMA( Value1, _wma );
+	x = InvFisherTfm( Value2 );
+	
+	return x;
+}
+
+function TrendIntensityIndex( array, major, minor )
+{
+	_ma = MA( array, major );
+
+	Dev = array - _ma;
+	Pos_Dev = IIf(Dev>0, Dev, 0);
+	Neg_Dev = IIf(Dev<0, abs(Dev), 0);
+
+	SDPos = Sum(Pos_Dev, minor);
+	SDNeg = Sum(Neg_Dev, minor);
+
+	TII = 100 * (SDPos / (SDPos + SDNeg));
+	
+	return TII;
+	
+}
+
+function TrendIntensityIndex_Custom( type, array, major, minor )
+{
+	_ma = Average( type, array, major );
+
+	Dev = array - _ma;
+	Pos_Dev = IIf(Dev>0, Dev, 0);
+	Neg_Dev = IIf(Dev<0, abs(Dev), 0);
+
+	SDPos = Sum(Pos_Dev, minor);
+	SDNeg = Sum(Neg_Dev, minor);
+
+	TII = 100 * (SDPos / (SDPos + SDNeg));
+	
+	return TII;
+	
+}
+
+function SqueezeMomentumIndicator(source, length, multBB, multKC, useTrueRange)
+{
+	basis = MA(source, length);
+	dev = multBB * StDev(source, length, False);
+	upperBB = basis + dev;
+	lowerBB = basis - dev;
+
+	_ma = MA(source, length);
+
+	H_L = H - L;
+	H_C = abs(H - Ref(C, -1));
+	L_C = abs(L - Ref(C, -1));
+
+	tr = Max(H_L, Max(H_C, L_C));
+
+	if(useTrueRange == True) range = tr;
+	if(useTrueRange == False) range = (high - low);
+
+	rangema = MA(range, length);
+	upperKC = _ma + rangema * multKC;
+	lowerKC = _ma - rangema * multKC;
+
+	sqzOn  = (lowerBB > lowerKC) AND (upperBB < upperKC);
+	sqzOff = (lowerBB < lowerKC) AND (upperBB > upperKC);
+	noSqz  = (sqzOn == false) AND (sqzOff == false);
+
+	_avg1 = (HHV(High, length) + LLV(Low, length)) / 2;
+
+	_avg2 = (_avg1 + MA(Close, length)) / 2;
+
+	val = LinearReg(source - _avg2, length);
+	
+	VarSet( "SMI", val );
+	VarSet( "SqzOn", sqzOn );
+	VarSet( "SqzOff", sqzOff );
+	
+	return;	
+}
+
+_SECTION_END();

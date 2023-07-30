@@ -1,0 +1,81 @@
+/*_______________________________________________________________________________________________________________________
+|This code is for AmiBroker Formula Language (AFL) learning (non-commercial) purposes only. Please do not copy this code|
+|(or any other version of it) and paste it over on other forums or anywhere else on the Internet or in any other form	|
+|without the AmiBroker Forum owner's consent (https://forum.amibroker.com/).                                            |
+_______________________________________________________________________________________________________________________*/
+
+procedure CalcFloorPvts( _H, _L, _C ) {	 
+	 VarSet( "pp", ( _H + _L + _C ) / 3 );
+	 VarSet( "R1", 2 * VarGet( "pp" ) - _L );
+	 VarSet( "S1", 2 * VarGet( "pp" ) - _H );
+	 VarSet( "R2", VarGet( "pp" ) + ( VarGet( "R1" ) - VarGet( "S1" ) ) );
+	 VarSet( "R3", VarGet( "R1" ) + ( _H - _L ) );
+	 VarSet( "S2", VarGet( "pp" ) - ( VarGet( "R1" ) - VarGet( "S1" ) ) );
+	 VarSet( "S3", VarGet( "S1" ) - ( _H - _L ) );
+}
+
+_SECTION_BEGIN( "Floor Pivots" );
+	 SetChartBkColor( colorBlack );
+	 SetChartOptions( 1, chartShowDates );
+	 Plot( C, "Price", colorDefault, styleCandle );
+
+	 ppColor = ParamColor( "Pivot Line Color", colorWhite );
+	 rColor = ParamColor( "Resistance Line Color", colorRed );
+	 sColor = ParamColor( "Support Line Color", colorBrightGreen );
+
+	 ShLabels = ParamToggle( "Show pivot labels?", "No|Yes", 1 );
+
+	 ShDevPvts = ParamToggle( "Show developing pivots?", "No|Yes", 0 );
+	 ShDevPvtLabels = ParamToggle( "Show developing pivot labels?", "No|Yes", 0 );
+
+	 bi = BarIndex();
+	 DaysFrstBi = TimeFrameExpand( TimeFrameCompress( bi, inDaily, compressOpen ), inDaily, expandFirst );
+	 DaysFrstBiCond = bi == DaysFrstBi;
+
+	 PrevDayH = TimeFrameGetPrice( "H", inDaily, -1, expandFirst );
+	 PrevDayL = TimeFrameGetPrice( "L", inDaily, -1, expandFirst );
+	 PrevDayC = TimeFrameGetPrice( "C", inDaily, -1, expandFirst );
+	 CalcFloorPvts( PrevDayH, PrevDayL, PrevDayC );
+
+	 Plot( IIf( DaysFrstBiCond, Null, VarGet( "pp" ) ), "", ppColor, styleNoRescale | styleNoLabel, Null, Null, 0, -2 );
+	 Plot( IIf( DaysFrstBiCond, Null, VarGet( "pp" ) ), "", ppColor, styleNoRescale | styleNoLabel, Null, Null, -1, -2 );
+	 if( ShLabels ) PlotTextSetFont( StrFormat( "PP %1.2f", SelectedValue( pp ) ), "Courier New", 8, SelectedValue( DaysFrstBi ), SelectedValue( pp ), ppColor, colorDefault, 0 );
+
+	 nP = 3; //Number of Res. and Supp. lines
+	 for( i = 1; i <= nP; i++ ) {
+		 Plot( IIf( DaysFrstBiCond, Null, VarGet( "R" + i ) ), "", rColor, styleNoRescale | styleNoLabel, Null, Null, 0, -2 );
+		 Plot( IIf( DaysFrstBiCond, Null, VarGet( "R" + i ) ), "", rColor, styleNoRescale | styleNoLabel, Null, Null, -1, -2 );
+ 
+		 Plot( IIf( DaysFrstBiCond, Null, VarGet( "S" + i ) ), "", sColor, styleNoRescale | styleNoLabel, Null, Null, 0, -2 );
+		 Plot( IIf( DaysFrstBiCond, Null, VarGet( "S" + i ) ), "", sColor, styleNoRescale | styleNoLabel, Null, Null, -1, -2 );
+
+		 if( ShLabels ) {
+			 PlotTextSetFont( StrFormat( "R%0.0f %1.2f", i, SelectedValue( VarGet( "R" + i ) ) ), "Courier New", 8, SelectedValue( DaysFrstBi ), SelectedValue( VarGet( "R" + i ) ), rColor, colorDefault, 0 ); //https://forum.amibroker.com/t/cannot-plot-in-chart/15322?u=cougar
+			 PlotTextSetFont( StrFormat( "S%0.0f %1.2f", i, SelectedValue( VarGet( "S" + i ) ) ), "Courier New", 8, SelectedValue( DaysFrstBi ), SelectedValue( VarGet( "S" + i ) ), sColor, colorDefault, 0 );
+		 }
+	 }
+
+	 if( ShDevPvts ) {
+		 shift = 20; // Number of Bars to be shifted, could use a Param if needed (read http://www.amibroker.com/kb/2015/01/14/drawing-line-extensions-on-future-bars-using-afl/)
+		 lvbi = LastValue( bi );
+		 LAx0 = lvbi - shift + 1;
+		 LAx1 = lvbi;
+	 
+		 DaysH = TimeFrameGetPrice( "H", inDaily, 0, expandFirst );
+		 DaysL = TimeFrameGetPrice( "L", inDaily, 0, expandFirst );
+		 DaysC = TimeFrameGetPrice( "C", inDaily, 0, expandFirst );
+		 CalcFloorPvts( DaysH, DaysL, DaysC );
+
+		 Plot( LineArray( LAx0, LastValue( VarGet( "pp" ) ), LAx1, LastValue( VarGet( "pp" ) ) ), "", ppColor, styleNoRescale | styleNoLabel, Null, Null, shift );
+		 if( ShDevPvtLabels ) PlotTextSetFont( StrFormat( "PP %1.2f", LastValue( pp ) ), "Courier New", 8, lvbi + shift / 2, LastValue( pp ), ppColor, colorDefault, 0 );
+		 for( i = 1; i <= nP; i++ ) {
+			 Plot( LineArray( LAx0, LastValue( VarGet( "R" + i ) ), LAx1, LastValue( VarGet( "R" + i ) ) ), "", rColor, styleNoRescale | styleNoLabel, Null, Null, shift );
+			 Plot( LineArray( LAx0, LastValue( VarGet( "S" + i ) ), LAx1, LastValue( VarGet( "S" + i ) ) ), "", sColor, styleNoRescale | styleNoLabel, Null, Null, shift );
+
+			 if( ShDevPvtLabels ) {
+				 PlotTextSetFont( StrFormat( "R%0.0f %1.2f", i, LastValue( VarGet( "R" + i ) ) ), "Courier New", 8, lvbi + shift / 2, LastValue( VarGet( "R" + i ) ), rColor, colorDefault, 0 );
+				 PlotTextSetFont( StrFormat( "S%0.0f %1.2f", i, LastValue( VarGet( "S" + i ) ) ), "Courier New", 8, lvbi + shift / 2, LastValue( VarGet( "S" + i ) ), sColor, colorDefault, 0 );
+			 }
+		 }
+	 }
+_SECTION_END();

@@ -1,0 +1,5 @@
+Period = Param("Periods",22,1,100,1);
+
+WVF = ( HHV ( Close, Period ) - Low ) / ( HHV ( Close, Period ) ) * 100;
+
+Plot(WVF, "Williams VIX Fix (" + Period + ")", ParamColor("Color", colorBlue), ParamStyle("Style"));

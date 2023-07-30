@@ -1,0 +1,69 @@
+/*
+Easylanguage code from TASC Aug 2019
+
+
+Inputs:
+Period(20),
+Predict(3);
+
+Vars:
+	Order(0),
+	F1(0), G1(0), S1(0), Bandwidth(.25),
+	count(0),
+	SumC(0),
+	Filt(0),
+	Voss(0);
+
+If CurrentBar = 1 Then Begin
+	Order = 3*Predict;
+	F1 = Cosine(360 / Period);
+	G1 = Cosine(Bandwidth*360 / Period);
+	S1 = 1 / G1 - SquareRoot( 1 / (G1*G1) - 1);
+End;
+
+//Band Limit the input data with a wide band BandPass Filter
+
+Filt = .5*(1 - S1)*(Close - Close[2]) + F1*(1 + S1)*Filt[1] - S1*Filt[2];
+
+If CurrentBar <= 5 Then Filt = 0;
+
+//Compute Voss predictor
+SumC = 0;
+For count = 0 to Order - 1 Begin
+	SumC = SumC + ( (count + 1) / Order ) * Voss[Order - count];
+End;
+Voss = ((3 + Order) / 2)*Filt - SumC;
+Plot1(Filt);
+Plot2(Voss);
+
+*/
+
+SetBarsRequired( sbrAll, 0 );
+
+Period = Param( "Period", 20, 1, 100, 1 );
+
+Predict = Param( "Predict", 3, 1, 20, 1 );
+
+Bandwidth = 0.25;
+Order = 3 * Predict;
+PI = 4 * atan( 1 );
+
+F1 = cos( ( 360 / Period ) * ( PI  / 180 ) );
+G1 = cos( ( Bandwidth * 360 / Period ) * ( PI / 180 ) );
+S1 = 1 / G1 - sqrt( 1 / ( G1 * G1 ) - 1 );
+
+Filt = IIR( C, 0.5 * ( 1 - S1 ), F1 * ( 1 + S1 ), 0, -S1, -0.5 * ( 1 - S1 ) );
+
+sumC = Voss = 0;
+
+for( n = Order; n < BarCount; n++ )
+{
+	for( count = 0; count < Order; count++ )
+	{
+		sumC[n] = sumC[n] + ( ( count + 1 ) / Order ) * Voss[n - Order + count];
+	}
+	Voss[n] = ((3 + Order) / 2 ) * Filt[n] - sumC[n];
+}
+
+Plot( Filt, "Filt", colorRed, styleLine );
+Plot( Voss, "Voss", colorBlue, styleLine );

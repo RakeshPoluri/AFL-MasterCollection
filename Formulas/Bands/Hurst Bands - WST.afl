@@ -1,0 +1,26 @@
+// Downloaded From https://www.WiseStockTrader.com
+CY1 =  Param("Short Cycle Length?" ,10, 1 ,1000 ,1 )/2;
+CY2 =  Param("Medium Cycle Length?" ,80, 1 ,1000 ,1 )/2;
+M1 =  Param("Short Cycle Multiplyer?" ,1, 0.01 ,10 ,1 );
+M2 =  Param("Medium Cycle Multiplyer?" ,3, 0.01 ,10 ,1 );
+T1 =  Ref(MA(Close ,CY1 ),CY1/2)+ M1*ATR(CY1 );
+B1 =  Ref(MA( Close ,CY1 ),CY1/2)- M1*ATR(CY1 );
+T2 =  Ref(MA(Close ,CY2 ),CY2/2)+ M2*ATR(CY2 );
+B2 =  Ref(MA( Close ,CY2 ),CY2/2)- M2*ATR(CY2 );
+
+Plot(T1, "", colorLime);
+Plot(B1, "", colorLime);
+Plot(T2, "", colorRed);
+Plot(B2, "", colorRed);
+
+GraphXSpace = 5;
+_SECTION_BEGIN( "Price" );
+SetChartOptions( 0, chartShowDates | chartShowArrows | chartLogarithmic | chartWrapTitle );
+_N( Title = StrFormat( "{{NAME}} - " + SectorID( 1 ) + " - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) Vol " + WriteVal( V, 1.0 ) + " {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ) );
+Plot( C, "Close", colorRose, styleCandle | styleNoTitle | ParamStyle( "Style" ) | GetPriceStyle() );
+
+if ( ParamToggle( "Tooltip shows", "All Values|Only Prices" ) )
+{
+    ToolTip = StrFormat( "Open: %g\nHigh:  %g\nLow:   %g\nClose:  %g (%.1f%%)\nVolume: " + NumToStr( V, 1 ), O, H, L, C, SelectedValue( ROC( C, 1 ) ) );
+}
+_SECTION_END();

@@ -1,0 +1,10 @@
+Field = ParamField("Price field",-1);
+Periods = Param("Periods", 10, 2, 300, 1);
+Factor = Param("Factor", 1, 0, 10, 0.05);
+Color = ParamColor("Color", colorCycle );
+Style = ParamStyle("Style");
+
+Upper_Band = MA(Field, Periods) + (Factor * ATR(Periods));
+Lower_Band = MA(Field, Periods) - (Factor * ATR(Periods));
+
+Plot(Upper_Band - Lower_Band, "ATRBandWidth" + _PARAM_VALUES(), Color, Style ); 

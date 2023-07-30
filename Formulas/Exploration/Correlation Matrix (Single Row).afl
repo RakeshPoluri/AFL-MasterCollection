@@ -1,0 +1,50 @@
+/// Output Correlation as matrix view or in single column via Addrow
+/// @link https://forum.amibroker.com/t/how-to-display-a-correlation-matrix-in-one-column/13687/2
+/// derived from 
+/// @link https://forum.amibroker.com/t/correlation-matrix/1184
+/// by fxshrat@gmail.com
+CorrLB = Param("Lookback", 252, 50, 300, 1); // daily correlation look-back period
+AddRow_Mode = ParamToggle( "AddRow Mode", "OFF|ON", 1);
+
+wlnumber = GetOption( "FilterIncludeWatchlist" ); // choose your WL in Analysis window
+symlist = GetCategorySymbols( categoryWatchlist, wlnumber );
+
+nm = Name();
+dt = DateTime();
+dt_str = DateTimeToStr(SelectedValue(dt));
+
+logC = log( C / Ref( C, -1 ) );// does not belong within loop
+
+if ( AddRow_Mode ) {
+	Filter = 0;
+	SetSortColumns(1, -4); 
+	SetOption( "NoDefaultColumns", True);
+	AddTextColumn( "","Ticker", 1, -1, -1, 90 );
+	AddColumn( Null, "Date", formatDateTime, -1, -1, 120 );
+	AddTextColumn( "", "Symbol", 1);
+	AddColumn( Null, "Correlation", 1.3, -1, -1, 110 );
+} else {
+	SetSortColumns(1); 
+	Filter = Status( "lastbarinrange" );
+}
+
+// iterate through symbols
+for ( i = 0; ( sym = StrExtract( symlist, i ) ) != ""; i++ ) {
+	Frg = Foreign( sym, "C" ); // store Foreign to variable since it is called multiple times
+	FrgLog = log( Frg / Ref( Frg, -1 ) );
+	Corr = Correlation( logC, FrgLog, CorrLB );    
+    
+	if ( AddRow_mode /*&& nm != sym*/ ) {
+		AddRow( StrFormat( "%s\t%s\t%s\t%1.3f", nm, dt_str, sym, SelectedValue(Corr)) );     
+	} else {
+		// set color dynamically based on correlation values
+		// and display the output in exploration column
+		corrcond = Corr>0.6;// used several times
+		tickercond = nm == sym;// used several times
+		Clr = 32 + SelectedValue( Corr ) * 32;
+		Clr = IIf( tickercond, colorBlack, Clr );
+		fntcolor = IIf( tickercond, colorWhite, IIf(corrcond,colorWhite, -1 ));
+		cellcolor = IIf( tickercond, colorDarkBlue, IIf(corrcond, colorGreen, -1) ); 
+		AddColumn( Corr, sym, 1.3, fntcolor, cellcolor, width = 60 );  
+	}
+}  

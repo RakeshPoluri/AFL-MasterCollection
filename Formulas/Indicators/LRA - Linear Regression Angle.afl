@@ -1,0 +1,13 @@
+P = ParamField("Price field", -1 );
+
+periods = Param( "Periods", 21, 2, 250, 1 );
+
+slope = LinRegSlope( P, periods );
+
+pi = 4 * atan( 1 ) ; //Pi
+slopeangle = atan( slope ) * ( 180 / pi );
+
+Plot(slopeangle, "Linear Regression Angle", colorGreen, styleLine);
+PlotGrid(50, colorYellow);
+PlotGrid(0, colorYellow);
+PlotGrid(-50, colorYellow);

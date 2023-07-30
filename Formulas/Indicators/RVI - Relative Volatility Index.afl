@@ -1,0 +1,19 @@
+xPrice = ParamField("Price",3);
+
+Period  = Param("Period", 10, 2, 300, 1);
+
+SD10=StDev(xPrice,Period);
+
+upward = (xPrice > Ref(xPrice,-1)) * SD10;
+downward = (xPrice < Ref(xPrice,-1)) * SD10;
+
+upwardMA = wilders(upward,Period);
+downwardMA = wilders(downward,Period);
+
+RV = upwardMA / downwardMA;
+myRVI = 100 - 100 / (1 + RV);
+
+Plot(myRVI,"Rvi",Colorred,styleLine|styleThick);
+PlotGrid(0,ColorRGB(160,32,240));
+PlotGrid(20,Colorred);
+PlotGrid(80,Colorgreen);

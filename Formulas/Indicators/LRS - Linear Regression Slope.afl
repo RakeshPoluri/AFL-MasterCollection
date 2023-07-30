@@ -1,0 +1,15 @@
+P = log(ParamField("Price field", -1 ));
+Periods = Param("Periods", 14, 2, 300, 1 );
+
+p_color = ParamColor( "Color", colorWhite );
+
+col_choice = ParamToggle("Color on Trend?", "Yes|No");
+
+if (col_choice == 0)
+{
+	color = IIf(LinRegSlope( P, Periods ) > 0, colorBrightGreen, colorRed);
+}
+else { color = p_color; }
+
+Plot( LinRegSlope( P, Periods ), "LinRegSlope", color, ParamStyle("Style", styleHistogram|styleThick, maskAll), Null, Null, 0, 0, 2 );
+Plot(0, "", colorYellow, styleThick);

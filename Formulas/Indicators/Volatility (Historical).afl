@@ -1,0 +1,16 @@
+_field = ParamField("Field", -1);
+_period = Param("Periods", 21, 2, 500, 1);
+_tf = ParamList("Time Frame", "1m|5m|15m|25m|75m|1D", 5);
+
+if(_tf=="1m") multiple = 375;
+if(_tf=="5m") multiple = 75;
+if(_tf=="15m") multiple = 25;
+if(_tf=="25m") multiple = 15;
+if(_tf=="75m") multiple = 5;
+if(_tf=="1D") multiple = 1;
+
+days = 252 * multiple;
+
+HV = 100 * StDev(log(_field/Ref(_field,-1)), _period) * sqrt(days);
+
+Plot(HV, _DEFAULT_NAME(), ParamColor("Color", colorCycle), ParamStyle("Style"));

@@ -1,0 +1,188 @@
+NewDay = Day() != Ref(Day(),-1);
+
+trimmed_symbol = "" ;
+if(Name()=="BANKNIFTY" OR Name()=="BANKNIFTY-I" OR Name()=="BANKNIFTY_F1")
+{
+	trimmed_symbol = "BANKNIFTY";
+}
+
+/* Function to get Number of Days in Month */
+function DaysInMonth(MonthNum,YearNum)
+{
+	_Daysinmonth	= IIf(MonthNum==1 OR MonthNum==3 OR MonthNum==5 OR MonthNum==7 OR MonthNum==8 OR MonthNum==10 OR MonthNum==12,31,30);
+	Daysinmonthfeb	= IIf((YearNum % 4 == 0 AND YearNum % 100 != 0) OR (YearNum % 4 == 0 AND YearNum % 400 == 0), 29, 28);
+	_Daysinmonth	= IIf(MonthNum==2,Daysinmonthfeb,_Daysinmonth);
+	return _Daysinmonth;
+}
+
+/* Function to get Day of Weekly Expiry */
+function GetWeeklyExpiryDay(_d, _w, _m, _y)
+{
+	global LastThursday;
+	Daysinmonthfinal	= Daysinmonth(_m, _y);
+	Subtract			= StrToNum(StrExtract("3,4,5,6,0,1,2",(((Daysinmonthfinal)-_d)%7+_w)%7));
+	LastThursday		= Daysinmonthfinal-Subtract;
+	ExpiryDay			= 0;
+	for(n=LastThursday; n >= LastThursday%7; n--)
+	{
+		if(n%7 == LastThursday%7) {
+			if(abs(n - _d) < 7 AND (n - _d) >= 0) { ExpiryDay = n; }
+		}
+	}
+	return ExpiryDay;
+}
+
+/* Date Conditions */
+last_day	= LastValue(Day());
+last_week	= LastValue(DayOfWeek());
+last_month	= LastValue(Month());
+last_year	= LastValue(Year());
+
+/* Get Weekly Expiry Day */
+weeklyday		= GetWeeklyExpiryDay(last_day, last_week, last_month, last_year);
+if(weeklyday==0)
+{
+	last_day	= 1;
+	week_calc	= DaysInMonth(LastValue(Month()), LastValue(Year())) - LastValue(Day());
+	last_week	= (LastValue(DayOfWeek()) + week_calc) - 6;
+	if(LastValue(Month()) == 12) last_month	= 1;
+	else last_month	= LastValue(Month()) + 1;
+	if(last_month == 1) last_year	= LastValue(Year()) + 1;
+	else last_year	= LastValue(Year());
+
+	weeklyday	= GetWeeklyExpiryDay(last_day, last_week, last_month, last_year);
+}
+
+/* Formula to Get Date of Weekly Expiry */
+day_size		= StrLen(NumToStr(weeklyday, 1.0)) == 1;
+if(LastValue(Day()) - weeklyday > 20) _month = Now(7)+1;
+else _month = Now(7);
+month_size		= StrLen(NumToStr(_month, 1.0)) == 1;
+if(_month-LastValue(Month()) > 10) _year = Now(8)+1;
+else _year = Now(8);
+if(day_size AND NOT month_size) 	{ date_string = "0"+weeklyday + "/" + ""+ _month + "/" + ""+_year; }
+if(month_size AND NOT day_size) 	{ date_string = ""+weeklyday + "/" + "0"+ _month + "/" + ""+ _year; }
+if(month_size AND day_size)			{ date_string = "0"+weeklyday + "/" + "0"+ _month + "/" + ""+ _year; }
+if(NOT day_size AND NOT month_size) { date_string = ""+weeklyday + "/" + ""+ _month + "/" + ""+ _year; }
+
+/* Get Custom Expiry Date on Basis of Input */
+ExpiryDate		= ParamDate("Expiry Date", date_string, 1);  // DO NOT CHANGE
+DayName			= StrExtract(ExpiryDate, 0, '/');
+MonthNum 		= StrExtract(ExpiryDate, 1, '/');
+MonthName 		= StrExtract( ",JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOW,DEC", StrToNum(MonthNum) );
+YearName		= NumToStr(StrToNum(StrExtract(ExpiryDate, 2, '/')) % 2000, 1.0, False);
+expiry_date		= DayName + MonthName + Now(8);
+
+value_for_strike_CE	= ValueWhen(NewDay, Open);
+nearest_strike_CE	= round(value_for_strike_CE/100) * 100;
+value_for_strike_PE	= ValueWhen(NewDay, Open);
+nearest_strike_PE	= round(value_for_strike_PE/100) * 100;
+value_for_strike	= LastValue(Open);
+nearest_strike		= round(value_for_strike/100) * 100;
+
+if( StrToNum(DayName) == LastThursday ) {
+	_Ticker_CE = trimmed_symbol + "_" + nearest_strike + "CE" + "-I";
+	_Ticker_PE = trimmed_symbol + "_" + nearest_strike + "PE" + "-I";
+	Ticker_CE = trimmed_symbol + "_" + nearest_strike_CE + "CE" + "-I";
+	Ticker_PE = trimmed_symbol + "_" + nearest_strike_PE + "PE" + "-I";
+}
+else {
+	_Ticker_CE = trimmed_symbol + "_" + nearest_strike + "CE" + "-" + expiry_date;
+	_Ticker_PE = trimmed_symbol + "_" + nearest_strike + "PE" + "-" + expiry_date;
+	Ticker_CE = trimmed_symbol + "_" + nearest_strike_CE + "CE" + "-" + expiry_date;
+	Ticker_PE = trimmed_symbol + "_" + nearest_strike_PE + "PE" + "-" + expiry_date;
+}
+
+RequestTimedRefresh(1, False);
+
+/* Parameters for Charting */
+Plot_button		= ParamToggle("Plot Futures/Options?", "Futures|Options");
+Plot_option		= ParamToggle("If Options, Plot which side?", "CE|PE");
+active_strike	= ParamToggle("If Options, Active Strike?", "No|Yes");
+
+if(Plot_button==0)
+{
+	SetChartOptions(0,chartShowArrows|chartShowDates);
+	_O = NumToStr(Open, 1.2);
+	_H = NumToStr(High, 1.2);
+	_L = NumToStr(Low, 1.2);
+	_C = NumToStr(Close, 1.2);
+	_strike = NumToStr(nearest_strike, 1.0, False);
+	_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} \n") + 
+		StrFormat("Open: %g, High: %g, Low: %g, Close: %g \n", O, H, L, C) + 
+		//StrFormat("Open: %s, High: %s, Low: %s, Close: %s, Change: %.2f%% \n", _O, _H, _L, _C, SelectedValue(ROC(C, 1 ))) + 
+		StrFormat("Active Strike: " + _strike + " \t {{VALUES}} \n") +
+		StrFormat("First CALL Option: " + Ticker_CE + ": " + NumToStr(Foreign(Ticker_CE, "C"), 1.2) + " \n") + 
+		StrFormat("First PUT Option: " + Ticker_PE + ": " + NumToStr(Foreign(Ticker_PE, "C"), 1.2) + " \n") +
+		StrFormat("Last CALL Option: " + _Ticker_CE + ": " + NumToStr(Foreign(_Ticker_CE, "C"), 1.2) + " \n") + 
+		StrFormat("Last PUT Option: " + _Ticker_PE + ": " + NumToStr(Foreign(_Ticker_PE, "C"), 1.2) + " \n"));
+
+	Plot( C, "Close", colorDefault, styleNoTitle | GetPriceStyle() );
+}
+if(Plot_button==1)
+{
+	if(active_strike)
+	{
+		if( StrToNum(DayName)==LastThursday) {
+			Ticker_CE = trimmed_symbol + "_" + nearest_strike + "CE" + "-I"; // CALL Option
+			Ticker_PE = trimmed_symbol + "_" + nearest_strike + "PE" + "-I"; // PUT Option
+		}
+		else {
+			Ticker_CE = trimmed_symbol + "_" + nearest_strike + "CE" + "-" + expiry_date; // CALL Option
+			Ticker_PE = trimmed_symbol + "_" + nearest_strike + "PE" + "-" + expiry_date; // PUT Option
+		}
+		if(Plot_option==0)
+		{
+			_O = Foreign(Ticker_CE, "O");
+			_H = Foreign(Ticker_CE, "H");
+			_L = Foreign(Ticker_CE, "L");
+			_C = Foreign(Ticker_CE, "C");
+			_V = Foreign(Ticker_CE, "V");
+			active_ticker = Ticker_CE;
+		}
+		if(Plot_option==1)
+		{
+			_O = Foreign(Ticker_PE, "O");
+			_H = Foreign(Ticker_PE, "H");
+			_L = Foreign(Ticker_PE, "L");
+			_C = Foreign(Ticker_PE, "C");
+			_V = Foreign(Ticker_PE, "V");
+			active_ticker = Ticker_PE;
+		}
+	}
+	else
+	{
+		/* Get the Ticker for Put and Call Options */
+		if( StrToNum(DayName) == LastThursday ) {
+			Ticker_CE = trimmed_symbol + "_" + nearest_strike_CE + "CE" + "-I";
+			Ticker_PE = trimmed_symbol + "_" + nearest_strike_PE + "PE" + "-I";
+		}
+		else {
+			Ticker_CE = trimmed_symbol + "_" + nearest_strike_CE + "CE" + "-" + expiry_date;
+			Ticker_PE = trimmed_symbol + "_" + nearest_strike_PE + "PE" + "-" + expiry_date;
+		}
+		if(Plot_option==0)
+		{
+			_O = Foreign(Ticker_CE, "O");
+			_H = Foreign(Ticker_CE, "H");
+			_L = Foreign(Ticker_CE, "L");
+			_C = Foreign(Ticker_CE, "C");
+			_V = Foreign(Ticker_CE, "V");
+			active_ticker = Ticker_CE;
+		}
+		if(Plot_option==1)
+		{
+			_O = Foreign(Ticker_PE, "O");
+			_H = Foreign(Ticker_PE, "H");
+			_L = Foreign(Ticker_PE, "L");
+			_C = Foreign(Ticker_PE, "C");
+			_V = Foreign(Ticker_PE, "V");
+			active_ticker = Ticker_PE;
+		}
+	}
+
+	SetChartOptions(0,chartShowArrows|chartShowDates);
+	_N(Title = StrFormat("{{VALUES}}"));
+	PlotOHLC( _O, _H, _L, _C, active_ticker, colorDefault, styleCandle);
+	//PlotForeign(active_ticker, active_ticker, colorDefault, styleCandle);
+}

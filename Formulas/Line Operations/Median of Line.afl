@@ -1,0 +1,5 @@
+P = ParamField("Field", 3 );
+
+_median = Param("Median", 5, 2, 300, 1);
+
+Plot( Median(P, _median), "Median of Lines", ParamColor("Color", colorBrightGreen), ParamStyle("Style"));

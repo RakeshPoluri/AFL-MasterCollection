@@ -1,0 +1,108 @@
+// Downloaded From https://www.WiseStockTrader.com
+/*
+   Bill William's Alligator System II - GATOR Oscillator to show convergence/divergence of balance lines
+Modified from williamalligator2. Please put chart together with williamalligator2.
+
+   Reference Website:
+   ==================
+   http://www.alpari-idc.com/en/market-analysis-guide/chaos-theory/alligator-and-gator.html
+
+   Original code by Steve Wiser - slwiserr@erols.com
+   Modified by TohMz  on June 9th, 2008
+*/
+SetChartOptions( 0, chartShowArrows|chartShowDates );
+
+
+_SECTION_BEGIN("BW Alligator");
+/*** The trend indicators ***/
+
+P= ParamList("Price", "Close|(H+L)/2|(H+C+L)/3",1);
+
+if (P=="Close")
+   A = C;
+   
+else
+if (P=="(H+C+L)/3")
+   A = (H+C+L)/3;
+else
+  A = (H+L)/2;
+
+AlligatorJaw   = Ref(Wilders(A,13),-8);
+AlligatorTeeth = Ref(Wilders(A,8), -5);
+AlligatorLips  = Ref(Wilders(A,5), -3);
+
+Gatorabove=AlligatorLips-AlligatorTeeth;
+Gatorbelow=AlligatorJaw-AlligatorTeeth;
+Gatorabovecolor=IIf(Gatorabove>Ref(Gatorabove,-1),colorGreen,colorRed);
+Gatorbelowcolor=IIf(Gatorbelow>Ref(Gatorbelow,-1),colorGreen,colorRed);
+
+
+Plot(Gatorabove,"GatorLT",Gatorabovecolor,styleHistogram|styleThick, maskHistogram);
+Plot(Gatorbelow,"GatorJT",Gatorbelowcolor,styleHistogram|styleThick, maskHistogram);
+
+
+_SECTION_END();
+
+
+_SECTION_BEGIN("BW Fractal");
+
+UpFractal= ValueWhen(
+  (Ref(H,-2) > Ref(H, -4)) AND
+  (Ref(H,-2) > Ref(H, -3)) AND
+  (Ref(H,-2) > Ref(H, -1)) AND
+  (Ref(H,-2) > H), Ref(H,-2));
+
+DownFractal= ValueWhen(
+  (Ref(L,-2) <= Ref(L, -4)) AND
+  (Ref(L,-2) <=  Ref(L, -3)) AND
+  (Ref(L,-2) <=  Ref(L, -1)) AND
+  (Ref(L,-2) <=  L), Ref(L,-2));
+
+
+
+//== Added Crash  crashandburn59 [at] hotmail.com solution
+/* Plot(Ref(UpFractal,2), "Up Fractal", ParamColor("Up Fractal Color",colorRed), ParamStyle("Up Fractal Style", styleDashed));
+Plot(Ref(DownFractal,2), "Down Fractal",ParamColor("Down Fractal Color",colorBlue), ParamStyle("Down Fractal Style", styleDashed)); */
+
+//Plot(Max(HHV(H,3),Ref(UpFractal,2)), "Up Fractal", ParamColor("Up Fractal Color",colorRed), ParamStyle("Up Fractal Style", styleDashed));
+//Plot(Max(HHV(H,3),Ref(UpFractal,2)), "Down Fractal",ParamColor("Down Fractal Color",colorBlue), ParamStyle("Down Fractal Style", styleDashed));
+
+_SECTION_END();
+
+
+
+_SECTION_BEGIN("Exploration");
+
+/*
+   Buy:  Scan stocks only breakout..maxbreakout (1~30%, default) and Trend is bullish
+   Sell: Scan stocks only breakout..maxbreakout (1~30%, default) and Trend is bearish
+
+*/
+//== Price Increment Value - depend on different country
+//Inc = 0.1;  
+Inc =1;
+
+//== Set the Price Range for stock to scan
+PriceFrom = Param("Price From:", 50,   1,50000, Inc); 
+PriceTo   = Param("Price To:",   50000, 1, 50000, Inc); 
+MaxBreakOut = Param("Max Breakout (%)", 5, 1, 30);  
+MaxBreakOut = MaxBreakOut/100;
+
+Buy  = C>UpFractal AND C<=(1+MaxBreakOut)*UpFractal AND AlligatorTeeth>AlligatorJaw; /* AND AlligatorLips>AlligatorTeeth; */
+Sell = C<DownFractal AND C>=(1-MaxBreakOut)*DownFractal AND AlligatorTeeth<AlligatorJaw; /* AND AlligatorLips<AlligatorTeeth; */
+
+
+
+/* Filter = (Buy OR Sell) AND (C>=PriceFrom AND C<=PriceTo) AND V>0; */
+
+Filter =  Gatorabove>=0 AND Gatorbelow <=0 AND (MA(V,3)/EMA(V,17))>1;
+
+AddTextColumn(FullName(), "Security", 1.0, colorDefault, colorDefault, 200); 
+AddTextColumn( WriteIf(Buy,"Buy", WriteIf(Sell, "Sell", "")), "Trade", 1.0);
+AddColumn( UpFractal, "Up Fratal");
+AddColumn( DownFractal, "Down Fratal");
+AddColumn( MA(V,3)/EMA(V,17), "MAV(3/17)");
+AddColumn( C, "Today's Close");
+
+
+_SECTION_END(); 

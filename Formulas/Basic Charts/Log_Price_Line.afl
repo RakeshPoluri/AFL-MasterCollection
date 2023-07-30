@@ -1,0 +1,15 @@
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+
+field = ParamList("Price Field", "O|H|L|C|HLC/3|OHLC/4|HL/2|OC/2", 3);
+
+if(field == "O")		lineplot = O;
+if(field == "H")		lineplot = H;
+if(field == "L")		lineplot = L;
+if(field == "C")		lineplot = C;
+if(field == "HLC/3")	lineplot = Avg;
+if(field == "OHLC/4")	lineplot = (O+H+L+C)/4;
+if(field == "HL/2")		lineplot = (H+L)/2;
+if(field == "OC/2")		lineplot = (O+C)/2;
+
+Plot( ln(lineplot), "Log " + field, ParamColor("Color", colorWhite ), styleNoTitle | ParamStyle("Style", styleLine) ); 

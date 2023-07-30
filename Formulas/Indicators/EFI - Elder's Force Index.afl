@@ -1,0 +1,5 @@
+Periods = Param("Periods", 25, 1, 150, 1);
+
+FI = EMA(((Close - Ref(Close, -1)) * V), Periods);
+
+Plot(FI, "Elder's Force Index", colorGreen, styleLine);

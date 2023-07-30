@@ -1,0 +1,9 @@
+pds = Param("Donchian Channel", 21, 2, 300, 1);
+
+DonchianUpper = HHV(Ref(H, -1), pds);
+DonchianLower = LLV(Ref(L, -1), pds);
+DonchianMiddle = (DonchianUpper + DonchianLower)/2;
+
+Plot(DonchianUpper,"DU",colorBlue,styleLine);
+Plot(DonchianMiddle,"DM",colorGreen,styleLine);
+Plot(DonchianLower,"DL",colorRed,styleLine); 

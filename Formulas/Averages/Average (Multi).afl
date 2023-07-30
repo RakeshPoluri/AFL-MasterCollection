@@ -1,0 +1,8 @@
+#include <CustomFuncs.afl>
+
+P = ParamField( "Price field", -1 );
+
+ma_periods = Param("MA Periods", 15, 1, 500, 1 );
+ma_type = ParamList("MA Type", "SMA|EMA|AMA|AMA2|LSMA|HMA|DEMA|TEMA|ZLEMA|TSF|VMA|WMA|Wilders|JMA|VWAP|VWMA", 1);
+
+Plot( Average(ma_type, P, ma_periods), "Average("+ma_type+","+ma_periods+")", ParamColor( "Color", colorCycle ), ParamStyle("Style"), Null, Null, 0, 0, Param("Width", 1, 0, 10, 1));

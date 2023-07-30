@@ -1,0 +1,3 @@
+P = ParamField("Price field", -1 );
+Periods = Param("Periods", 14, 2, 300, 1 );
+Plot(StDev(P, Periods ), "StDev", ParamColor( "Color", colorCycle ), ParamStyle("Style") );

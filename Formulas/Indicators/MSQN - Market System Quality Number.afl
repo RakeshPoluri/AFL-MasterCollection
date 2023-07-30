@@ -1,0 +1,25 @@
+/* min 30 observations & max of 100 for the color scale to work accurately. */
+
+field = ParamField("Field", -1);
+Periods = Param("Period", 50, 2, 1000, 1);
+
+Expectancy = ROC( field, Periods) / Periods;
+
+R = ROC ( field, 1); 			// Use daily change in value as a proxy for R-multiples
+
+SDofR = StDev( R , Periods , True);
+MSQN = ( Expectancy / SDofR ) * ( sqrt( Periods));
+
+VeryWeak   = MSQN < -0.7;
+Weak       = MSQN >= -0.7 AND MSQN < 0;
+Neutral    = MSQN >= 0    AND MSQN < 0.7;
+Strong     = MSQN >= 0.7  AND MSQN < 1.47;
+VeryStrong = MSQN >= 1.47;
+
+PlotC = IIf( VeryWeak  OR Ref( VeryWeak, -1), colorRed,
+	IIf( Weak OR Ref( Weak, -1), colorGold,
+	IIf( Neutral OR Ref( Neutral, -1), colorWhite,
+	IIf( Strong OR Ref( Strong, -1), colorBlue,
+	IIf( VeryStrong OR Ref( VeryStrong, -1), colorBrightGreen, Null )))));
+
+Plot( MSQN, _DEFAULT_NAME(), PlotC, ParamStyle("Style", styleLine|styleHistogram|styleThick, maskAll));

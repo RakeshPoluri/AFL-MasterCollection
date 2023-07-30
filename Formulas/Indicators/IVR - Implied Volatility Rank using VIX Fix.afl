@@ -1,0 +1,21 @@
+#include <CustomFuncs.afl>
+
+Period = Param("Periods",22,1,100,1);
+_param = Param("IV Rank", 252, 21, 252, 21);
+_level = Param("Level", 50, 25, 75, 5);
+
+WVF = ( HHV ( Close, Period ) - Low ) / ( HHV ( Close, Period ) ) * 100;
+
+//Plot(WVF, "Williams VIX Fix (" + Period + ")", ParamColor("Color", colorBlue), ParamStyle("Style"));
+
+IVR = ((WVF - LLV(WVF, _param)) / (HHV(WVF, _param) - LLV(WVF, _param))) * 100;
+
+Plot(IVR, "IVR", IIf(IVR > _level, colorBrightGreen, colorRed), ParamStyle("Style", styleHistogram|styleThick, maskHistogram));
+
+P = ParamField( "Price field", -1 );
+
+ma_periods = Param("MA Periods", 15, 1, 500, 1 );
+ma_type = ParamList("MA Type", "SMA|EMA|AMA|AMA2|LSMA|HMA|DEMA|TEMA|ZLEMA|TSF|VMA|WMA|Wilders|JMA|VWAP|VWMA", 1);
+
+Plot( Average(ma_type, P, ma_periods), "Average("+ma_type+","+ma_periods+")", ParamColor( "Color", colorCycle ), ParamStyle("Style MA"), Null, Null, 0, 0, Param("Width", 1, 0, 10, 1));
+

@@ -1,0 +1,19 @@
+//SetChartOptions(0,chartShowArrows|chartShowDates);
+
+Eq = Foreign("~~~EQUITY","Close");
+
+MaxEq = Highest( Eq );
+DD = 100 * ( Eq - MaxEq ) / MaxEq;
+MaxDD = Lowest( DD );
+
+Title = StrFormat("Drawdown = %.2g%%, Max. drawdown %.2g%%", DD, LastValue( MaxDD ) );
+
+SetGradientFill( colorViolet,colorBlue, 0 );
+
+Plot( DD, "Drawdown ", colorBlue, styleGradient | styleLine );
+Plot( MaxDD, "Max DD", colorRed);
+
+RollingMax = LLV(DD, 252);  
+Plot(RollingMax, "Rolling Max", colorViolet, styleThick);
+
+SetChartOptions( 2, 0, chartGridPercent );

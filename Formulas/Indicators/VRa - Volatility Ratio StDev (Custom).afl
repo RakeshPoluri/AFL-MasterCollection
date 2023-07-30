@@ -1,0 +1,10 @@
+_param = Param("First Param", 5, 1, 500, 1 );
+Periods = Param("Second Param", 21, 1, 500, 1 );
+
+_std_s = StDev(C, _param);
+
+_std_l = StDev(C, Periods);
+
+vr = _std_s / _std_l;
+
+Plot( vr, "Custom Volatilty Ratio STDEV (" + _param + "," + Periods + ")", ParamColor( "Color", colorBrightGreen ), ParamStyle("Style") ); 

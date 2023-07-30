@@ -1,0 +1,5 @@
+P = ParamField("Price field",-1);
+Periods = Param("Periods", 100, 2, 500, 1 );
+
+_sum = Sum(P, Periods);
+Plot(_sum, "Sum Over Last "+Periods+" Periods", colorBrightGreen);

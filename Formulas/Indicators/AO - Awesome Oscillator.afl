@@ -1,0 +1,11 @@
+P			= (H + L) / 2;
+small		= Param("Small Length", 5, 2, 500, 1, 10 );
+large		= Param("Large Length", 34, 2, 500, 1, 10 );
+
+AO			= MA(P, small) - MA(P, large);
+
+AOUpBar		= AO > Ref(AO, -1);
+AODownBar	= AO < Ref(AO, -1);
+
+Plot(AO, _DEFAULT_NAME(), IIf(AOUpBar,colorGreen,colorRed), styleHistogram|styleThick);
+PlotGrid(0, colorYellow);

@@ -1,0 +1,9 @@
+SetChartOptions(0,chartShowArrows|chartShowDates);
+
+_equity = Foreign("~~~Equity", "L");
+new_hi = _equity == HHV(_equity, BarCount);
+hi_equity = IIf(new_hi, _equity, Null);
+
+Plot(_equity, "Cash", colorWhite, ParamStyle("Style"), Null, Null, 0, 0, 3);
+Plot(hi_equity, "New Highs", colorBrightGreen, ParamStyle("Style Dots", styleDots|styleNoLine|styleArea, maskAll), Null, Null, 0, 0, 10);
+Title = "{{NAME}} - {{INTERVAL}} {{DATE}} {{VALUES}}";

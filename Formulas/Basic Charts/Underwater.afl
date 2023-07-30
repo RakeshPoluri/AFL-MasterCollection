@@ -1,0 +1,13 @@
+SetChartOptions(0,chartShowArrows|chartShowDates);
+
+EQ = C;
+MaxEQ = Highest( EQ );
+DD = 100 * ( Eq - MaxEQ ) / MaxEq;
+MaxDD = Lowest( DD );
+
+Title = StrFormat("Equity Drawdown = %.2g%%, Equity Max. drawdown %.2g%%", DD, LastValue( MaxDD ) );
+
+SetGradientFill( ColorBlend( colorPaleGreen, colorOrange ), colorPaleGreen, 0 );
+
+Plot( DD, "Equity Drawdown ", colorPaleGreen, styleGradient | styleLine );
+Plot( MaxDD, "Equity Max DD", colorRed, styleNoLabel );

@@ -1,0 +1,50 @@
+// Using StaticVarAdd and run EXPLORE
+
+// pick watchlist in AA window
+wlnum = GetOption( "FilterIncludeWatchlist" );
+List = CategoryGetSymbols( categoryWatchlist, wlnum );
+
+if( Status( "stocknum" ) == 0 )
+{
+    // cleanup variables created in previous runs
+    StaticVarRemove( "~SymbolCount*" );
+    StaticVarRemove( "~CustomCalculation*" );
+
+    for( n = 0; ( Symbol = StrExtract( List, n ) )  != "";  n++ )
+    {
+
+        SetForeign( symbol );
+        StaticVarAdd( "~O", O );
+        StaticVarAdd( "~H", H );
+        StaticVarAdd( "~L", L );
+        StaticVarAdd( "~C", C );
+        StaticVarAdd( "~V", V );
+        StaticVarAdd( "~SymbolCount", C != 0 ); // don't count a stock that isn't trading
+        // StaticVarAdd converts Nulls to zero's, so I'm not sure that there isn't a better way to code that C!=0
+
+        RestorePriceArrays();
+    }
+}
+
+svO = StaticVarGet( "~O" );
+svH = StaticVarGet( "~H" );
+svL= StaticVarGet( "~L" );
+svC = StaticVarGet( "~C" );
+svV = StaticVarGet( "~V" );
+svSymbolCount = StaticVarGet( "~SymbolCount" );
+ciO = svO / svSymbolCount;
+ciH = svH / svSymbolCount;
+ciL = svL / svSymbolCount;
+ciC = svC / svSymbolCount;
+ciV = svV / svSymbolCount;
+
+///////////////
+// Scan
+///////////////
+cname = ParamStr("Custom Index Ticker Name", "~RS_Equal_Weighted");
+AddToComposite( ciO, cname, "O" );
+AddToComposite( ciH, cname, "H" );
+AddToComposite( ciL, cname, "L" );
+AddToComposite( ciC, cname, "C" );
+AddToComposite( ciV, cname, "V" );
+Buy = 0;

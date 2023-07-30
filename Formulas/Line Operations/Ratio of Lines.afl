@@ -1,0 +1,4 @@
+P1 = ParamField("Numerator Field", 3 );
+P2 = ParamField("Denominator Field", -1 );
+
+Plot(P1/P2, "Ratio of Lines", ParamColor("Color", colorBrightGreen), ParamStyle("Style"));

@@ -1,0 +1,29 @@
+_SECTION_BEGIN("Price");
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+Plot( C, "Close", ParamColor("Color", colorDefault ), styleNoTitle | ParamStyle("Style") | GetPriceStyle() ); 
+_SECTION_END();
+
+_SECTION_BEGIN("VAP");
+bi = BarIndex();
+fvb = FirstVisibleValue( bi );
+lvb = LastVisibleValue( bi );
+
+mx = PriceVolDistribution( H, L, C, 100, False, fvb, lvb );
+
+GfxSetCoordsMode( 1 );
+
+GfxSelectPen( colorRed );
+
+bins = MxGetSize( mx, 0 );
+for( i = 0; i < bins; i++ )
+{
+price = mx[ i ][ 0 ]; // price level
+relvolume = mx[ i ][ 1 ]; // relative volume 0..1
+relbar = relvolume * (lvb-fvb+1);
+GfxMoveTo( fvb, price );
+GfxLineTo( fvb + relbar, price );
+}
+
+if( ParamToggle("BuildinVAP", "No|Yes") ) PlotVAPOverlay( 100, 100, colorGreen, 2 );
+_SECTION_END();

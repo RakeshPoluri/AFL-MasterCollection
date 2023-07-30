@@ -1,0 +1,20 @@
+MAPeriod = 40;
+SamplePeriod = 5;
+AngleThreshold = 45;
+
+_MA = MA(Close, MAPeriod);
+MAAngle = sin(atan((_MA-Ref(_MA, -1))/Ref(_MA, -1) * 100)) * 1000; //R2[MAPeriod](close)*100
+
+AverageAngle = MA(MAAngle, SamplePeriod);
+AverageAngle2 = MA(MAAngle, round(SamplePeriod/2));
+
+color = IIf(AverageAngle > AngleThreshold, ColorRGB(0, 255, 0),
+		IIf(AverageAngle < (AngleThreshold*-1), ColorRGB(255, 0, 0), 
+		ColorRGB(0, 0, 255)));
+
+AverageAngleD = abs(AverageAngle);
+AverageAngle2D = abs(AverageAngle2);
+
+Plot(AverageAngleD, "AverageAngle", color);
+Plot(AverageAngle2D, "AverageAngle2", colorWhite);
+PlotGrid(AngleThreshold, colorYellow);

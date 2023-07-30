@@ -1,0 +1,33 @@
+period = Param("CCI period", 20, 2, 100, 1);
+AP = Param("ATR Period", 5, 2, 25, 1);
+coeff = Param("ATR Multiplier", 1, 0.5, 3, 0.25);
+
+calc = Param("ATR Calc? SMA(TR)-1, ATR-2", 1, 1, 2, 1);
+
+H_L = H - L;
+H_C = abs(H - Ref(C, -1));
+L_C = abs(L - Ref(C, -1));
+
+_TR = Max(H_L, Max(H_C, L_C));
+
+if (calc == 1) { _ATR = MA(_TR, AP); }
+else { _ATR = ATR(AP); }
+
+src = Close;
+
+upT = Low - _ATR * coeff;
+downT = High + _ATR * coeff;
+MagicTrend = 0.0;
+
+_cci = CCI(period);
+
+for( i = 1; i < BarCount; i++ )
+{
+	MagicTrend[i] = IIf(_cci[i] >= 0, 
+					IIf(upT[i] < Nz(MagicTrend[i-1]), Nz(MagicTrend[i-1]), upT[i]),
+					IIf(downT[i] > Nz(MagicTrend[i-1]), Nz(MagicTrend[i-1]), downT[i]));
+}
+
+color1= IIf(CCI(period) >= 0, colorBlue, colorRed);
+
+Plot(MagicTrend, "TrendMagic", color1, ParamStyle("Style", styleLine|styleThick));

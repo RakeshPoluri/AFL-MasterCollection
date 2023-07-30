@@ -1,0 +1,5 @@
+SetChartOptions(0,chartShowArrows|chartShowDates);
+
+PlotForeign("~~~ISEQUITY","In-Sample Equity", colorRed, ParamStyle("IS Style") );
+PlotForeign("~~~OSEQUITY","Out-Of-Sample Equity", colorGreen, ParamStyle("OOS Style") );
+Title = "{{NAME}} - {{INTERVAL}} {{DATE}} {{VALUES}}";

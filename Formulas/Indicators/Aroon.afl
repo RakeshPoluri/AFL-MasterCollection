@@ -1,0 +1,8 @@
+#include <CustomFuncs.afl>
+
+period = Param("Aroon Periods", 14, 2, 500, 1);
+
+Aroon(period);
+
+Plot(AroonUp, "Aroon Up", ParamColor( "Color Up", colorBrightGreen ), ParamStyle("Style Up"));
+Plot(AroonDn, "Aroon Dn", ParamColor( "Color Dn", colorRed ), ParamStyle("Style Dn"));

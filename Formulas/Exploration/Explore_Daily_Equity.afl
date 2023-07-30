@@ -1,0 +1,3 @@
+fC = Foreign("~~~Equity", "Close");
+Filter=1; 
+AddColumn(fC,"Equity");

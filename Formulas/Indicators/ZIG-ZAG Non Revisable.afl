@@ -1,0 +1,18 @@
+vr = ParamField("Price field",-1);
+amnt = Param("Reversal amount", 5, 1, 100, 1);
+
+zz0 = Zig(vr, amnt);
+
+zz1 = Ref(zz0,-1);
+zz2 = Ref(zz0,-2);
+
+tr = ValueWhen(zz0 > zz1 AND zz1 < zz2, zz1, 1);
+pk = ValueWhen(zz0 < zz1 AND zz1 > zz2, zz1, 1);
+
+PU = tr + abs(tr) * amnt/100;
+PD = pk - abs(pk) * amnt/100;
+
+res = IIf(vr >= PU AND zz0 > zz1, 1, IIf(vr <= PD AND zz0 < zz1, -1, 0));
+res = IIf(res != 0, res, ValueWhen(res != 0, res, 1));
+
+Plot(res, "Non-Revisable ZIG-ZAG", colorBlue);

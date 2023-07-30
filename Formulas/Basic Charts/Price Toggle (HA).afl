@@ -1,0 +1,18 @@
+HaC = (O + H + L + C)/4;
+HaO = AMA( Ref( HaC, -1 ), 0.5 );
+HaH = Max( H, Max( HaC, HaO ) );
+HaL = Min( L, Min( HaC, HaO ) );
+barcolor = IIf(HaC >= HaO, colorBrightGreen, colorRed);
+
+SetChartOptions(0,chartShowArrows|chartShowDates);
+
+toggle = ParamToggle("Show Heikin Ashi?", "Yes|No", 1);
+
+if(toggle==0){
+	_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", HaO, HaH, HaL, HaC, SelectedValue( ROC( HaC, 1 ) ) ));
+	PlotOHLC( HaO, HaH, HaL, HaC, _DEFAULT_NAME(), barcolor, styleCandle|styleNoTitle );
+}
+else{
+	_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+	Plot( C, "Close", ParamColor("Color", colorDefault ), styleNoTitle | ParamStyle("Style") | GetPriceStyle() ); 
+}

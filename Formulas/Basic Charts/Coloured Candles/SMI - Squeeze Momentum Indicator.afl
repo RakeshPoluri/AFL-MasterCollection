@@ -1,0 +1,71 @@
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+
+length = Param("Length", 20);
+mult = Param("BB MultFactor", 2.0);
+multKC = Param("KC MultFactor", 1.5);
+
+useTrueRange = ParamToggle("Use TrueRange (KC)", "True|False");
+
+source = Close;
+basis = MA(source, length);
+dev = mult * StDev(source, length, False);
+upperBB = basis + dev;
+lowerBB = basis - dev;
+
+_ma = MA(source, length);
+
+H_L = H - L;
+H_C = abs(H - Ref(C, -1));
+L_C = abs(L - Ref(C, -1));
+
+tr = Max(H_L, Max(H_C, L_C));
+
+if(useTrueRange == 0) range = tr;
+if(useTrueRange == 1) range = (high - low);
+
+rangema = MA(range, length);
+upperKC = _ma + rangema * multKC;
+lowerKC = _ma - rangema * multKC;
+
+sqzOn  = (lowerBB > lowerKC) AND (upperBB < upperKC);
+sqzOff = (lowerBB < lowerKC) AND (upperBB > upperKC);
+noSqz  = (sqzOn == false) AND (sqzOff == false);
+
+_avg1 = (HHV(High, length) + LLV(Low, length)) / 2;
+
+_avg2 = (_avg1 + MA(Close, length)) / 2;
+
+val = LinearReg(source - _avg2, length);
+
+CandleBodyColor = IIf(val > 0, IIf(val > Nz(Ref(val, -1)), ColorRGB(10, 169, 169), ColorRGB(25, 11, 166)), 
+	IIf(val < Nz(Ref(val, -1)), ColorRGB(167, 10, 10), ColorRGB(168, 168, 11)));//, IIf(C>O, colorBrightGreen, colorRed));
+SetBarFillColor(CandleBodyColor);
+
+CandleWickColor = IIf(C>O,colorBrightGreen,IIf(C < O,colorRed, colorWhite));
+Plot( C, "Close", CandleWickColor, styleCandle|styleNoTitle, Null, Null, 0, 0, 5 );
+
+function ZLEMA(price, period)
+{
+	Lag = (period - 1) / 2;
+	_ema = (price + (price - Ref(price, -Lag)));
+	Z = EMA(_ema, period);
+	return Z;
+}
+
+function angle(price)
+{
+    first = ZLEMA(price, 13);
+    _zlema = ZLEMA(first, 5);
+    slope = LinRegSlope( _zlema, 5 );
+	pi = 4 * atan( 1 ) ;
+	slopeangle = atan( slope ) * ( 180 / pi );
+    return slopeangle;
+}
+
+D_angle = angle(Close);
+D_analysis = IIf( D_angle > 0, 1 , 0);
+
+dotColor = IIf( noSqz, colorBlue, IIf(sqzOn, colorRed, colorBrightGreen));
+//dotColor = IIf( D_analysis, colorBrightGreen, colorRed);
+Plot(10, "Squeeze", dotColor, ParamStyle( "Squeeze Style", styleOwnScale|styleArea|styleNoLabel|styleNoTitle, maskAll ), 5.2, 199);

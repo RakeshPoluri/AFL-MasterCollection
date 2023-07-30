@@ -1,0 +1,21 @@
+higher_period = ParamList("Select Higher Period", "5m|15m|1H|1D|1W|1M|3M|1Y");
+
+if(higher_period=="5m") period_higher=in5Minute;
+if(higher_period=="15m") period_higher=in15Minute;
+if(higher_period=="1H") period_higher=inHourly;
+if(higher_period=="1D") period_higher=inDaily;
+if(higher_period=="1W") period_higher=inWeekly;
+if(higher_period=="1M") period_higher=inMonthly;
+if(higher_period=="3M") period_higher=inQuarterly;
+if(higher_period=="1Y") period_higher=inYearly;
+
+period = Param("Periods", 15, 2, 300, 1, 10 );
+color = ParamColor( "Color", colorGreen );
+
+htf = TimeFrameCompress( Close, period_higher );
+
+htfma = EMA( htf, period );
+
+htfma = TimeFrameExpand( htfma, period_higher );
+
+Plot( htfma, "HTF_EMA", color );

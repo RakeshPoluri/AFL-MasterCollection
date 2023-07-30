@@ -1,0 +1,15 @@
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat(EncodeColor(colorBlack)+"{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+
+CandleBodyColor = IIf(C>O, colorWhite, colorBlack);
+SetBarFillColor(CandleBodyColor);
+
+CandleWickColor = colorBlack;
+Plot( C, "Close", CandleWickColor, styleCandle|styleNoTitle, Null, Null, 0, 0, 5 );
+
+C11=colorWhite;
+C12=colorWhite;
+pxwidth = Status("pxwidth");
+pxheight = Status("pxheight");
+SetChartBkGradientFill(C11, C12);
+GfxSetBkMode(1);

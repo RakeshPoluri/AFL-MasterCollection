@@ -1,0 +1,6 @@
+P = ParamField("Price field",-1);
+Periods = Param("Periods", 15, 2, 300, 1, 10 );
+
+tma = MA( MA( P, round(Periods+1)/2 ), Periods );
+
+Plot(tma ,"TMA("+P+","+Periods+")", ParamColor( "Color", colorCycle ), ParamStyle("Style") ); 

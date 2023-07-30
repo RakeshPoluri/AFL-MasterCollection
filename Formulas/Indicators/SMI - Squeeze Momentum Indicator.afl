@@ -1,0 +1,44 @@
+length = Param("Length", 20);
+mult = Param("BB MultFactor", 2.0);
+multKC = Param("KC MultFactor", 1.5);
+
+useTrueRange = ParamToggle("Use TrueRange (KC)", "True|False");
+
+source = Close;
+basis = MA(source, length);
+dev = mult * StDev(source, length, False);
+upperBB = basis + dev;
+lowerBB = basis - dev;
+
+_ma = MA(source, length);
+
+H_L = H - L;
+H_C = abs(H - Ref(C, -1));
+L_C = abs(L - Ref(C, -1));
+
+tr = Max(H_L, Max(H_C, L_C));
+
+if(useTrueRange == 0) range = tr;
+if(useTrueRange == 1) range = (high - low);
+
+rangema = MA(range, length);
+upperKC = _ma + rangema * multKC;
+lowerKC = _ma - rangema * multKC;
+
+sqzOn  = (lowerBB > lowerKC) AND (upperBB < upperKC);
+sqzOff = (lowerBB < lowerKC) AND (upperBB > upperKC);
+noSqz  = (sqzOn == false) AND (sqzOff == false);
+
+_avg1 = (HHV(High, length) + LLV(Low, length)) / 2;
+
+_avg2 = (_avg1 + MA(Close, length)) / 2;
+
+val = LinearReg(source - _avg2, length);
+
+histColor = IIf(val > 0, IIf(val > Nz(Ref(val, -1)), ColorRGB(10, 169, 169), ColorRGB(25, 11, 166)), 
+			IIf(val < Nz(Ref(val, -1)), ColorRGB(167, 10, 10), ColorRGB(168, 168, 11)));
+
+Plot(val, _DEFAULT_NAME(), histColor, ParamStyle( "Histogram Style", styleHistogram | styleThick, maskHistogram ));
+
+dotColor = IIf( noSqz, colorBlue, IIf(sqzOn, colorRed, colorBrightGreen));
+Plot(0, "", dotColor, ParamStyle( "Squeeze Style", styleDots | styleThick | styleNoLine | styleNoLabel, maskAll )); //, Null, Null, 0, 0, 2);

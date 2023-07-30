@@ -1,0 +1,19 @@
+ma_periods = Param("MA Periods", 15, 1, 500, 1 );
+
+ma_type = ParamList("MA Type", "SMA|EMA|AMA|AMA2|LSMA|HMA|DEMA|TEMA|TSF|WMA|Wilders", 1);
+
+if( ma_type == "SMA" )		{_ma = MA( C, ma_periods ); _hma = MA( H, ma_periods ); _lma = MA( L, ma_periods );}
+if( ma_type == "EMA" )		{_ma = EMA( C, ma_periods ); _hma = EMA( H, ma_periods ); _lma = EMA( L, ma_periods );}
+if( ma_type == "AMA" )		{_ma = AMA( C, 2/(ma_periods + 1) ); _hma = AMA( H, 2/(ma_periods + 1) ); _lma = AMA( L, 2/(ma_periods + 1) );}
+if( ma_type == "AMA2" )		{_ma = AMA2( C, 2/(ma_periods + 1), 1 - (2/(ma_periods + 1)) ); _hma = AMA2( H, 2/(ma_periods + 1), 1 - (2/(ma_periods + 1)) ); _lma = AMA2( L, 2/(ma_periods + 1), 1 - (2/(ma_periods + 1)) );}
+if( ma_type == "LSMA" )		{_ma = LinearReg( C, ma_periods ); _hma = LinearReg( H, ma_periods ); _lma = LinearReg( L, ma_periods );}
+if( ma_type == "HMA" )		{_ma = HMA( C, ma_periods ); _hma = HMA( H, ma_periods ); _lma = HMA( L, ma_periods );}
+if( ma_type == "DEMA" )		{_ma = DEMA( C, ma_periods ); _hma = DEMA( H, ma_periods ); _lma = DEMA( L, ma_periods );}
+if( ma_type == "TEMA" )		{_ma = TEMA( C, ma_periods ); _hma = TEMA( H, ma_periods ); _lma = TEMA( L, ma_periods );}
+if( ma_type == "TSF" )		{_ma = TSF( C, ma_periods ); _hma = TSF( H, ma_periods ); _lma = TSF( L, ma_periods );}
+if( ma_type == "WMA" )		{_ma = WMA( C, ma_periods ); _hma = WMA( H, ma_periods ); _lma = WMA( L, ma_periods );}
+if( ma_type == "Wilders" )	{_ma = Wilders( C, ma_periods ); _hma = Wilders( H, ma_periods ); _lma = Wilders( L, ma_periods );}
+
+Plot( _ma, "Close", ParamColor( "Color", colorSkyblue ), ParamStyle("Style")  );
+Plot( _hma, "High", ParamColor( "Color", colorSkyblue ), ParamStyle("Style")  );
+Plot( _lma, "Low", ParamColor( "Color", colorSkyblue ), ParamStyle("Style")  );

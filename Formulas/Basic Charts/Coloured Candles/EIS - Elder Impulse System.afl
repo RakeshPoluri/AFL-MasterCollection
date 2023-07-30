@@ -1,0 +1,71 @@
+#include <CustomFuncs.afl>
+
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+
+MA_Type				= ParamList("MA Type", "SMA|EMA|AMA|AMA2|LSMA|HMA|DEMA|TEMA|ZLEMA|TSF|VMA|WMA|Wilders", 1);
+MA_prds 			= Param("Daily EMA_periods", 13, 2);
+Daily_MACD_Fast		= Param("Daily MACD Fast", 12, 2);
+Daily_MACD_Slow		= Param("Daily MACD Slow", 26, 2);
+Daily_MACD_Signal	= Param("Daily MACD Signal", 9, 2);
+Weekly_MACD_Fast	= Param("Weekly MACD Fast", 5, 2);
+Weekly_MACD_Slow	= Param("Weekly MACD Slow", 8, 2);
+Weekly_MACD_Signal	= Param("Weekly MACD Signal", 5, 2);
+Monthly_MACD_Fast	= Param("Monthly MACD Fast", 5, 2);
+Monthly_MACD_Slow	= Param("Monthly MACD Slow", 8, 2);
+Monthly_MACD_Signal	= Param("Monthly MACD Signal", 5, 2);
+Plot_Fashion		= ParamToggle("Plot Type", "Bar & Arrows|Impulse Bars", 1);
+
+_MA	= Average(MA_Type, Close, MA_prds);
+
+Histogram			= MACD(Daily_MACD_Fast, Daily_MACD_Slow) - Signal(Daily_MACD_Fast, Daily_MACD_Slow, Daily_MACD_Signal);
+
+// Determine if we have an Impulse UP, DOWN or None
+Impulse_Up			= _MA > Ref(_MA, -1) AND Histogram > Ref(Histogram, -1);
+Impulse_Down		= _MA < Ref(_MA, -1) AND Histogram < Ref(Histogram, -1);   
+Impulse_None		= (NOT Impulse_UP) AND (NOT Impulse_Down);
+
+TimeFrameSet(inWeekly);
+MACD_val			= MACD(Weekly_MACD_Fast, Weekly_MACD_Slow);
+Signal_val			= Signal(Weekly_MACD_Fast, Weekly_MACD_Slow, Weekly_MACD_Signal);
+Hist_in_w			= MACD_val - Signal_val;
+wh_rising			= Hist_in_w > Ref(Hist_in_w, -1);
+wh_falling			= Hist_in_w < Ref(Hist_in_w, -1);
+TimeFrameRestore();
+
+TimeFrameSet(inMonthly);
+MACD_val			= MACD(Monthly_MACD_Fast, Monthly_MACD_Slow);
+Signal_val			= Signal(Monthly_MACD_Fast, Monthly_MACD_Slow, Monthly_MACD_Signal);
+Hist_in_m			= MACD_val - Signal_val;
+mh_rising			= Hist_in_m > Ref(Hist_in_m, -1);
+mh_falling			= Hist_in_m < Ref(Hist_in_m, -1);
+TimeFrameRestore();
+
+wh_rising 			= TimeFrameExpand( wh_rising, inWeekly, expandLast ); 
+wh_falling 			= TimeFrameExpand( wh_falling, inWeekly, expandLast); 
+mh_rising 			= TimeFrameExpand(mh_rising, inMonthly, expandLast);
+mh_falling 			= TimeFrameExpand(mh_falling, inMonthly, expandLast);
+
+kol 				= IIf( wh_rising, colorGreen,  IIf(wh_falling, colorRed, colorLightGrey));
+mkol 				= IIf( mh_rising, colorBlue,  IIf(mh_falling, colorYellow, colorLightGrey));
+
+if (Plot_Fashion == 0)
+{
+	CandleWickColor = IIf(C>O,colorBrightGreen,IIf(C < O,colorRed, colorWhite));
+	Plot( C, "Close", CandleWickColor, styleCandle|styleNoTitle, Null, Null, 0, 0, 5 );
+	
+	PlotShapes(shapeUpArrow * Impulse_Up, colorBlue, 0, Low, -12);
+	PlotShapes(shapeDownArrow * Impulse_Down, colorRed, 0, High, -12);
+	PlotShapes(shapeSmallCircle * Impulse_None, colorWhite, 0, High, 5);
+}
+if (Plot_Fashion == 1)
+{
+	CandleBodyColor = IIf(impulse_UP, colorBlue, IIf(impulse_Down, colorRed, colorWhite));
+	SetBarFillColor(CandleBodyColor);
+	
+	CandleWickColor = IIf(C>O,colorBrightGreen,IIf(C < O,colorRed, colorWhite));
+	Plot( C, "Close", CandleWickColor, styleCandle|styleNoTitle, Null, Null, 0, 0, 5 );
+}
+
+Plot(10, "Weekly", kol, styleOwnScale|styleArea|styleNoLabel|styleNoTitle, -10.5, 366.5);
+Plot(10, "Monthly", mkol, styleOwnScale|styleArea|styleNoLabel|styleNoTitle, 5.2, 199);

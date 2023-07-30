@@ -1,0 +1,14 @@
+//SetChartOptions(0,0,chartGrid30|chartGrid70);
+periods = Param("Periods", 14, 1, 200, 1 );
+ob = Param("Over Bought", 70);
+md = Param("Middle", 50);
+os = Param("Over Sold", 30);
+
+TimeFrameSet(inDaily);
+_rsi = RSI( periods);
+TimeFrameRestore();
+
+Plot( TimeFrameExpand(_rsi, inDaily), "RSI("+periods+")", ParamColor( "Color", colorBrightGreen ), ParamStyle("Style")  );
+PlotGrid(ob, colorWhite);
+PlotGrid(md, colorYellow);
+PlotGrid(os, colorWhite);

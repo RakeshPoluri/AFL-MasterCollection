@@ -1,0 +1,4 @@
+P = ParamField("Price field", -1 );
+Periods = Param("Periods", 1, -1000, 1000, 1 );
+
+Plot(P*Periods, "Line Multiple", ParamColor("Color", colorBrightGreen), ParamStyle("Style"));

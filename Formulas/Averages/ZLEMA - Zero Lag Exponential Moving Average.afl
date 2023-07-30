@@ -1,0 +1,8 @@
+P = ParamField("Price field",-1);
+Periods = Param("Periods", 15, 2, 500, 1, 10 );
+
+Lag = (Periods - 1) / 2;
+_ema = (P + (P - Ref(P, -Lag)));
+ZLEMA = EMA(_ema, Periods);
+
+Plot(ZLEMA, _DEFAULT_NAME(), ParamColor( "Color", colorCycle ), ParamStyle("Style") );

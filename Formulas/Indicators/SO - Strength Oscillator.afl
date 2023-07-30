@@ -1,0 +1,8 @@
+period = Param("Strength Oscillator Period", 21, 2);
+
+num = Close - Ref(Close, -1);
+den = High - Low;
+
+Strength = MA(num, period) / MA(den, period);
+
+Plot(Strength, _DEFAULT_NAME(), ParamColor( "Color", colorBrightGreen ), ParamStyle("Style", styleLine, maskAll) ); 

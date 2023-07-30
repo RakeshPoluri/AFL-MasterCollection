@@ -1,0 +1,7 @@
+Filter=1;
+
+AddColumn(O,"Open"); 
+AddColumn(H,"High"); 
+AddColumn(L,"Low"); 
+AddColumn(C,"Close"); 
+AddColumn(V,"Volume",1.0);

@@ -1,0 +1,22 @@
+function Beta( BaseSymbol, N )
+{
+ Chg = ROC( C, 1 );
+ ChgBase = ROC( BaseSymbol, 1 );
+
+ return ( N * Sum( Chg * ChgBase , N ) - Sum( Chg, N) * Sum( ChgBase, N ) ) /
+        ( N * Sum( ChgBase ^ 2 , N ) -  Sum( ChgBase, N ) ^ 2 );
+}
+
+period = Param("Periods", 22, 2, 100 );
+symbol = Foreign(ParamStr("Symbol", "NIFTY_F1_Lots" ), "C" );
+
+_b = Beta(symbol, period);
+_c = Correlation(Close, symbol, period);
+
+//Plot( Beta( symbol, Param("Periods", 21, 2, 100 ) ), _DEFAULT_NAME(), ParamColor( "Color", ColorCycle ) );
+
+Filter = (_b > 2 AND _c > 0.8) OR (_b > 2 AND _c < -0.6);
+
+AddColumn(Close, "Close");
+AddColumn(_b, "Beta");
+AddColumn(_c, "Correlation");

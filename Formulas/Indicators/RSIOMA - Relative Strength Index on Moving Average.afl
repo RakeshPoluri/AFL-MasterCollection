@@ -1,0 +1,35 @@
+P = ParamField( "Price field", -1 );
+
+ma_periods = Param("MA Periods", 15, 1, 200, 1 );
+ma_type = ParamList("MA Type", "SMA|EMA|AMA|LSMA|HMA|DEMA|TEMA|TSF|WMA|Wilders", 1);
+
+ob = Param("Over Bought", 70);
+md = Param("Middle", 50);
+os = Param("Over Sold", 30);
+
+function HMA_AFL( array, period )
+{
+ fast = WMA( array, period / 2 );
+ slow = WMA( array, period );
+  
+ return WMA( 2 * fast - slow, sqrt( period ) );
+}
+
+if( ma_type == "AMA" )		_ma = AMA( P, 2/(Periods + 1) );
+if( ma_type == "SMA" )		_ma = MA( P, ma_periods );
+if( ma_type == "EMA" )		_ma = EMA( P, ma_periods );
+if( ma_type == "HMA" )		_ma = HMA_AFL( P, ma_periods );
+if( ma_type == "DEMA" )		_ma = DEMA( P, ma_periods );
+if( ma_type == "TEMA" )		_ma = TEMA( P, ma_periods );
+if( ma_type == "Wilders" )	_ma = Wilders( P, ma_periods );
+if( ma_type == "WMA" )		_ma = WMA( P, ma_periods );
+if( ma_type == "LSMA" )		_ma = LinearReg( P, ma_periods );
+if( ma_type == "TSF" )		_ma = TSF( P, ma_periods );
+
+periods = Param("Periods", 3, 1, 200, 1 );
+_rsioma = RSIa( _ma, periods);
+
+Plot( _rsioma, "RSIoMA("+ma_periods+","+periods+")", ParamColor( "Color", colorBrightGreen ), ParamStyle("Style")  );
+PlotGrid(ob, colorWhite);
+PlotGrid(md, colorYellow);
+PlotGrid(os, colorWhite);

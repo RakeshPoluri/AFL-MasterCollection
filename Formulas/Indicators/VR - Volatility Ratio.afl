@@ -1,0 +1,9 @@
+Periods = Param("Periods", 14, 1, 100, 1 );
+
+_ttr = ATR(1);
+
+_atr = ATR(Periods);
+
+vr = _ttr / _atr;
+
+Plot( vr, "Volatilty Ratio (" + Periods + ")", ParamColor( "Color", colorBrightGreen ), ParamStyle("Style") ); 

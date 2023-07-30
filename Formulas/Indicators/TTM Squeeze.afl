@@ -1,0 +1,52 @@
+#include <CustomFuncs.afl>
+
+length = Param("Length", 20);
+kcMult = Param("Keltner Channels Multiplier", 1.5);
+useTrueRange = ParamToggle("Use True Range for Keltner Channels?", "True|False");
+bbMult = Param("Bollinger Bands Multiplier", 2.0);
+smoothType = ParamList("Smoothing Type", "None|EMA|SMA|VWMA|WMA|LSMA", 0);
+smoothLength = Param("Smoothing Length", 14);
+widthRatio = Param("Width Ratio Alert", 1.0);
+src = ParamField("Price field",-1);
+
+H_L = H - L;
+H_C = abs(H - Ref(C, -1));
+L_C = abs(L - Ref(C, -1));
+
+tr = Max(H_L, Max(H_C, L_C));
+
+basis = EMA(src, length);
+
+if (useTrueRange == 0) avgrange = EMA(tr, length);
+if (useTrueRange == 1) avgrange = EMA(High-Low, length);
+
+kcUpper = basis + kcMult * avgrange;
+kcLower = basis - kcMult * avgrange;
+
+kcw = 2 * kcMult * avgrange / basis;
+
+mean = MA(src, length);
+_stdev = stdev(src, length);
+
+bbUpper = mean + bbMult * _stdev;
+bbLower = mean - bbMult * _stdev;
+
+bbw = 2 * bbMult * _stdev / mean;
+
+mom = src - Ref(src, -length);
+ 
+if(smoothType == "None") hist = mom;
+if(smoothType == "EMA") hist = EMA(mom, smoothLength);
+if(smoothType == "LSMA") hist = LinearReg(mom, smoothLength);
+if(smoothType == "SMA") hist = MA(mom, smoothLength);
+if(smoothType == "VWMA") hist = VWMA(mom, smoothLength);
+if(smoothType == "WMA") hist = WMA(mom, smoothLength);
+
+histColor = IIf(hist >= 0 AND Ref(hist, -1) < hist, ColorRGB(10, 169, 169), 
+			IIf(hist >= 0 AND Ref(hist, -1) > hist, ColorRGB(25, 11, 166), 
+			IIf(hist < 0 AND Ref(hist, -1) < hist, ColorRGB(168, 168, 11), ColorRGB(167, 10, 10))));
+
+Plot(hist, "TTM", histColor, ParamStyle( "Histogram Style", styleHistogram | styleThick, maskHistogram ));
+
+dotColor = IIf( bbw / kcw <= widthRatio, colorRed, colorBrightGreen); // bbUpper <= kcUpper or bbLower >= kcLower ? red : #00ff00
+Plot(0, "Squeeze", dotColor, ParamStyle( "Squeeze Style", styleDots | styleThick | styleNoLine, maskAll )); //, Null, Null, 0, 0, 2);

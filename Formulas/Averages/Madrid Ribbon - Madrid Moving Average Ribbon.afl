@@ -1,0 +1,126 @@
+// +------------------------------------------------------------------------------+
+// ¦                                                                              ¦
+// ¦ © Madrid : 141017TH2251                                                      ¦
+// ¦                                                                              ¦
+// ¦ Rev. 210306SA1836 : Upgrade to Pinescript 4                                  ¦
+// ¦                                                                              ¦
+// ¦ Madrid Moving Average Ribbon                                                 ¦
+// ¦                                                                              ¦
+// ¦ This plots a moving average ribbon, either exponential or standard.          ¦
+// ¦ This study is best viewed with a dark background.  It provides an easy       ¦
+// ¦ and fast way to determine the trend direction and possible reversals.        ¦
+// ¦                                                                              ¦
+// ¦ Lime : Uptrend. Long trading                                                 ¦
+// ¦ Green : Reentry (buy the dip) or downtrend reversal warning                  ¦
+// ¦ Red : Downtrend. Short trading                                               ¦
+// ¦ Maroon : Short Reentry (sell the peak) or uptrend reversal warning           ¦
+// ¦                                                                              ¦
+// ¦ To best determine if this is a reentry point or a trend reversal             ¦
+// ¦ the MMARB (Madrid Moving Average Ribbon Bar) study is used.                  ¦
+// ¦ This is the bar located at the bottom.  This bar signals when a              ¦
+// ¦ current trend reentry is found (partially filled with opposite dark color)   ¦
+// ¦ or when a trend reversal is ahead (filled with the opposite color.           ¦
+// ¦                                                                              ¦
+// ¦ This source code is subject to the terms of the Mozilla Public License 2.0   ¦
+// ¦ at https://mozilla.org/MPL/2.0/                                              ¦
+// ¦                                                                              ¦
+// +------------------------------------------------------------------------------+
+
+PHI		=	( 1 + sqrt(5) ) / 2;
+PI		=	104348/33215;
+BULL	=	1;
+BEAR	=	-1;
+NONE	=	0;
+
+GRN01	=	ColorRGB(124, 252, 0);		// #7CFC00
+GRN02	=	ColorRGB(50, 205, 50);		// #32CD32
+GRN03	=	ColorRGB(34, 139, 34);		// #228B22
+GRN04	=	ColorRGB(0, 100, 0);		// #006400
+GRN05	=	ColorRGB(0, 128, 0);		// #008000
+GRN06	=	ColorRGB(9, 53, 7);			// #093507
+RED01	=	ColorRGB(255, 69, 0);		// #FF4500
+RED02	=	ColorRGB(255, 0, 0);		// #FF0000
+RED03	=	ColorRGB(178, 34, 34);		// #B22222
+RED04	=	ColorRGB(139, 0, 0);		// #8B0000
+RED05	=	ColorRGB(128, 0, 0);		// #800000
+RED06	=	ColorRGB(51, 13, 6);		// #330d06
+
+AQUA	=	ColorRGB(0, 255, 255);		// #00FFFF
+BLACK	=	ColorRGB(0, 0, 0);			// #000000
+BLUE	=	ColorRGB(0, 0, 255);		// #0000FF
+FUCHSIA	=	ColorRGB(255, 0, 255);		// #FF00FF
+GRAY	=	ColorRGB(128, 128, 128);	// #808080
+GREEN   =	ColorRGB(0, 128, 0);		// #008000
+LIME    =	ColorRGB(0, 255, 0);		// #00FF00
+MAROON  =	ColorRGB(128, 0, 0);		// #800000
+NAVY    =	ColorRGB(0, 0, 128);		// #000080
+OLIVE   =	ColorRGB(128, 128, 0);		// #808000
+ORANGE  =	ColorRGB(255, 127, 0);		// #FF7F00
+PURPLE  =	ColorRGB(128, 0, 128);		// #800080
+RUBY    =	ColorRGB(255, 0, 0);		// #FF0000
+SILVER  =	ColorRGB(192, 192, 192);	// #C0C0C0
+TEAL    =	ColorRGB(0, 128, 128);		// #008080
+YELLOW  =	ColorRGB(255, 255, 0);		// #FFFF00
+WHITE   =	ColorRGB(255, 255, 255);	// #FFFFFF
+
+i_exp	=	ParamToggle("Exponential MA?", "True|False", 0);
+
+function maColor(_ma, _maRef)
+{
+	diffMA = _ma - Ref(_ma, -1);
+	macol = IIf(diffMA >= 0 AND _ma > _maRef, LIME, 
+	IIf(diffMA < 0 AND _ma > _maRef, MAROON, 
+	IIf(diffMA <= 0 AND _ma < _maRef, RUBY, 
+	IIf(diffMA >= 0 AND _ma < _maRef, GREEN, GRAY))));
+	return macol;
+}
+
+src = Close;
+
+ma05  = IIf(i_exp == 0, EMA(src, 05), MA(src, 05));
+ma10  = IIf(i_exp == 0, EMA(src, 10), MA(src, 10));
+ma15  = IIf(i_exp == 0, EMA(src, 15), MA(src, 15));
+ma20  = IIf(i_exp == 0, EMA(src, 20), MA(src, 20));
+ma25  = IIf(i_exp == 0, EMA(src, 25), MA(src, 25));
+ma30  = IIf(i_exp == 0, EMA(src, 30), MA(src, 30));
+ma35  = IIf(i_exp == 0, EMA(src, 35), MA(src, 35));
+ma40  = IIf(i_exp == 0, EMA(src, 40), MA(src, 40));
+ma45  = IIf(i_exp == 0, EMA(src, 45), MA(src, 45));
+ma50  = IIf(i_exp == 0, EMA(src, 50), MA(src, 50));
+ma55  = IIf(i_exp == 0, EMA(src, 55), MA(src, 55));
+ma60  = IIf(i_exp == 0, EMA(src, 60), MA(src, 60));
+ma65  = IIf(i_exp == 0, EMA(src, 65), MA(src, 65));
+ma70  = IIf(i_exp == 0, EMA(src, 70), MA(src, 70));
+ma75  = IIf(i_exp == 0, EMA(src, 75), MA(src, 75));
+ma80  = IIf(i_exp == 0, EMA(src, 80), MA(src, 80));
+ma85  = IIf(i_exp == 0, EMA(src, 85), MA(src, 85));
+ma90  = IIf(i_exp == 0, EMA(src, 90), MA(src, 90));
+ma100 = IIf(i_exp == 0, EMA(src, 100), MA(src, 100));
+
+style = ParamStyle("Style", styleLine|styleNoLabel|styleNoTitle, maskAll);
+
+Plot( ma05, "MA 05", maColor(ma05, ma100), style, Null, Null, 0, 0, 3);
+Plot( ma10, "MA 10", maColor(ma10, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma15, "MA 15", maColor(ma15, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma20, "MA 20", maColor(ma20, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma25, "MA 25", maColor(ma25, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma30, "MA 30", maColor(ma30, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma35, "MA 35", maColor(ma35, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma40, "MA 40", maColor(ma40, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma45, "MA 45", maColor(ma45, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma50, "MA 50", maColor(ma50, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma55, "MA 55", maColor(ma55, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma60, "MA 60", maColor(ma60, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma65, "MA 65", maColor(ma65, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma70, "MA 70", maColor(ma70, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma75, "MA 75", maColor(ma75, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma80, "MA 80", maColor(ma80, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma85, "MA 85", maColor(ma85, ma100), style, Null, Null, 0, 0, 1);
+Plot( ma90, "MA 90", maColor(ma90, ma100), style, Null, Null, 0, 0, 3);
+
+GfxSetOverlayMode(1);
+GfxSelectFont("Tahoma", Status("pxheight")/20 );
+GfxSetTextAlign( 6 );// center alignment
+GfxSetTextColor( ColorHSB( 43, 43, 73 ) );
+GfxSetBkMode(0); // transparent
+GfxTextOut( "Madrid Ribbon - Rakesh Poluri", Status("pxwidth")/2, Status("pxheight")/40 );

@@ -1,0 +1,7 @@
+Periods		= Param("Periods", 21, 2, 100, 1);
+Threshold	= Param("Threshold", 0.3, 0, 1, 0.1);
+
+ker = (abs(C - Ref(C, -Periods))) / (Sum(abs(C - Ref(C, -1)), Periods));
+
+Plot( ker, _DEFAULT_NAME(), ParamColor("Color", colorRed), ParamStyle("Style"));
+PlotGrid(Threshold, colorYellow);

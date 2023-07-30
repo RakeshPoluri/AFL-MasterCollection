@@ -1,0 +1,11 @@
+Buy = Cross( MACD(), Signal() ); 
+Sell = Cross( Signal(), MACD() ); 
+
+Filter = 1; // all bars 
+ 
+AddColumn( Buy, "Buy" ); 
+AddColumn( Sell, "Sell" ); 
+
+TextList = "No Signal\nBuy\nSell\nBuy and Sell"; 
+TextSelector = 1 * Buy + 2 * Sell; /* would give 0 if no signal, 1 if a buy, 2 if a sell, 3 if both buy and sell */ 
+AddMultiTextColumn( TextSelector, TextList, "Which signal" );  

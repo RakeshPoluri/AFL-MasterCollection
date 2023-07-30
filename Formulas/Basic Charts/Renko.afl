@@ -1,0 +1,181 @@
+function FillRun( dir, num, changedir )
+{
+    global i, j, RKC, RKO, RKC2, RKO2, rounds;
+    for ( x = 1; x <= num; x++ )
+    {
+        if ( j == BarCount-1 )
+        {
+            rounds++;
+            j = 0;
+            if ( rounds % 2 == 0 )
+            {
+                RKC[j] = RKC2[barcount - 1];
+                RKO[j] = RKO2[barcount - 1];
+            }
+            else
+            {
+                RKC2[j] = RKC[barcount - 1];
+                RKO2[j] = RKO[barcount - 1];
+            }
+        }
+        j++;
+        extra = ( changedir AND x == 1 ) * dir;
+        if ( rounds % 2 == 1 )
+        {
+            RKC2[ j ] = RKC2[ j - 1 ] + dir + extra;
+            RKO2[ j ] = RKC2[ j - 1 ] + extra;
+        }
+        else
+        {
+            RKC[ j ] = RKC[ j - 1 ] + dir + extra;
+            RKO[ j ] = RKC[ j - 1 ] + extra ;
+        }
+    }
+}
+
+SetBarsRequired( sbrAll, sbrAll );
+
+Brick = Param( "Brick Size", 1, 0.0001, 500, 0.001 );
+_reverse = Param( "Reversal", 2, 0.1, 10, 0.05 ); 
+intra = 0;
+if(interval() < inDaily) intra = 1;
+startBar = 0;
+
+// Convert the closing price to rising and falling rounded bricks
+CF = ceil( C / Brick );
+CR = floor( C / Brick );
+
+// initialize first element
+j = 0;
+RKC[j] = CF[startBar];
+RKO[j] = CF[startBar] + 1;
+
+dir = -1;
+rounds = 0;
+
+for ( i = startBar + 1; i <= BarCount - 1; i++ )
+{
+    if ( rounds % 2 == 1 )
+    {
+        if ( CF[i] <= RKC2[j] - 1 AND dir < 0 ) // Continue down
+        {
+            num = RKC2[j] - CF[i];
+
+            FillRun( dir, num, False );
+        }
+        else
+            if ( CR[i] >= RKC2[j] + _reverse AND dir < 0 ) // Change down to up
+            {
+                num = CR[i] - RKC2[j];
+                dir = 1;
+
+                FillRun( dir, num, True );
+            }
+            else
+                if ( CR[i] >= RKC2[j] + 1 AND dir > 0 ) // Continue Up
+                {
+                    num = CR[i] - RKC2[j];
+                    FillRun( dir, num, False );
+                }
+                else
+                    if ( CF[i] <= RKC2[j] - _reverse AND dir > 0 ) // Change up to down
+                    {
+                        num = RKC2[j] - CF[i];
+                        dir = -1;
+
+                        FillRun( dir, num, True );
+                    }
+
+    }
+    else
+    {
+        if ( CF[i] <= RKC[j] - 1 AND dir < 0 ) // Continue down
+        {
+            num = RKC[j] - CF[i];
+
+            FillRun( dir, num, False );
+        }
+        else
+            if ( CR[i] >= RKC[j] + _reverse AND dir < 0 ) // Change down to up
+            {
+                num = CR[i] - RKC[j];
+                dir = 1;
+
+                FillRun( dir, num, True );
+            }
+            else
+                if ( CR[i] >= RKC[j] + 1 AND dir > 0 ) // Continue Up
+                {
+                    num = CR[i] - RKC[j];
+                    FillRun( dir, num, False );
+                }
+                else
+                    if ( CF[i] <= RKC[j] - _reverse AND dir > 0 ) // Change up to down
+                    {
+                        num = RKC[j] - CF[i];
+                        dir = -1;
+
+                        FillRun( dir, num, True );
+                    }
+    }
+}
+
+delta = BarCount - 1 - j;
+
+if ( rounds % 2 == 0 )
+{
+    RKCx = Ref( RKC, -delta );
+    RKOx = Ref( RKO, -delta );
+    if ( rounds > 0 )
+    {
+        for ( k = 0; k < delta; k ++ )
+        {
+			RKCx[k] = RKC2[barcount - 1 - delta + k];
+            RKOx[k] = RKO2[barcount - 1 - delta + k];
+        }
+    }
+}
+else
+{
+    RKCx = Ref( RKC2, -delta );
+    RKOx = Ref( RKO2, -delta );
+    if ( rounds > 0 )
+    {
+        for ( k = 0; k < delta; k ++ )
+        {
+            RKCx[k] = RKC[barcount - 1 - delta + k];
+            RKOx[k] = RKO[barcount - 1 - delta + k];
+        }
+    }
+}
+
+
+C = RKCx * Brick;
+O = RKOx * Brick;
+H = Max( C, O );
+L = Min( C, O );
+Plot( C, "Brick Size (" + Brick + ")", IIf( C > O, colorGreen, colorRed ), styleCandle );
+
+nm = Name();
+
+Filter = 1;//C>0; 
+
+SetOption( "NoDefaultColumns", True );
+
+AddTextColumn( "", "Ticker", 1, -1, -1, 60 );
+AddColumn( Null, "Open");
+AddColumn( Null, "High");
+AddColumn( Null, "Low");
+AddColumn( Null, "Close");
+AddColumn( Null, "Volume", 1.0);
+//AddColumn( Null, "Open Interest", 1.0);
+
+for( i = 0; i < BarCount; i++ ) {
+	_o = StrFormat("\t%.2f", O[i]);
+	_h = StrFormat("\t%.2f", H[i]);
+	_l = StrFormat("\t%.2f", L[i]);
+	_c = StrFormat("\t%.2f", C[i]);
+	_v = StrFormat("\t%.0f", V[i]);
+	_oi = StrFormat("\t%.0f", OI[i]);
+	AddRow( nm + _o + _h + _l + _c + _v ); // + _oi );
+}

@@ -1,0 +1,5 @@
+P = ParamField("Price field",-1);
+
+Angle = atan(P - Ref(P, -1)) * 180 / (4 * atan(1.0));
+
+Plot(Angle, "Angle", ParamColor( "Color", colorWhite ), ParamStyle("Style"));

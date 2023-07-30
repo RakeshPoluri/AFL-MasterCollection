@@ -1,0 +1,17 @@
+P = ParamField("Price field",-1);
+P1 = Param("Fast Periods", 5, 1, 10, 1 );
+P2 = Param("Slow Periods", 15, 5, 20, 1 );
+
+up = EMA(P, P1) >= EMA(P, P2);
+dn = EMA(P, P1) < EMA(P, P2);
+
+CandleBodyColor = IIf(up, colorBrightGreen, IIf(dn, colorRed, colorWhite));
+
+SetBarFillColor(CandleBodyColor);
+
+CandleWickColor = CandleBodyColor;
+
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+Plot( C, "Close", CandleWickColor, styleCandle|styleNoTitle,Null,Null,0,0,5 );
+

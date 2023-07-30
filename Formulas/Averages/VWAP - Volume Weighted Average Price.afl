@@ -1,0 +1,17 @@
+function vwap_func()
+{
+	NewDay = Day() != Ref(Day(),-1);
+	StartTime = ValueWhen(NewDay, TimeNum());
+	_interval = Interval(0) / 60;
+	FC_EndTime = StartTime + (_interval * 100);
+	
+	Bars_so_far_today = 1 + BarsSince( NewDay );
+	StartBar = ValueWhen(TimeNum() == FC_EndTime, BarIndex());
+	TodayVolume = Sum(V,Bars_so_far_today);
+	IIf (BarIndex() >= StartBar, _VWAP = Sum (C * V, Bars_so_far_today  ) / TodayVolume,0);
+	return _VWAP;
+}
+
+vwap_ = vwap_func();
+
+Plot(vwap_, "VWAP", ParamColor( "Color", colorWhite ), ParamStyle("Style") );

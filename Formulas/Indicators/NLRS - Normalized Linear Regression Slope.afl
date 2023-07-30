@@ -1,0 +1,14 @@
+P = ParamField("Price field", -1 );
+Periods = Param("Periods", 14, 2, 300, 1 );
+
+_slope = LinRegSlope( P, Periods );
+_line = LinearReg(P, Periods );
+
+_norm = 100 * ( _slope / _line );
+
+//_norm = IIf(_norm>=0, -1, 1);
+
+//_norm = 10 - _norm;
+
+Plot( _norm, "Norm LinRegSlope",  ParamColor( "Color", ColorCycle ), ParamStyle("Style") );
+PlotGrid(0, colorYellow);

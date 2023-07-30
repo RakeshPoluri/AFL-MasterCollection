@@ -1,0 +1,6 @@
+Title = "Portfolio Cash = " + L;
+
+SetGradientFill( colorLightOrange, colorPaleGreen  );
+Plot( L, "Portfolio Cash", ColorBlend( colorPaleGreen, colorBlack ), styleGradient | styleLine, Null, Null, 0, -1 );
+
+SetChartOptions(1, chartShowDates|chartLogarithmic );

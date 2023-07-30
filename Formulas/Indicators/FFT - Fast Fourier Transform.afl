@@ -1,0 +1,50 @@
+SetBarsRequired(100000,100000);
+
+Len = Param("FFT Length", 1024, 64, 10000, 10 );
+
+Len = Min( Len, BarCount );
+
+x = BarIndex();
+x1 = x - BarCount + Len;
+
+
+input = C;
+a = LastValue( LinRegIntercept( input, Len - 1 ) );
+b = LastValue( LinRegSlope( input, Len - 1 ) );
+
+
+Lr = a + b * x1;
+
+data = input - Lr;// de-trending
+
+ffc = FFT(data,Len);
+
+for( i = 0; i < Len - 1; i = i + 2 )
+{
+   amp[ i ] = amp[ i + 1 ] = sqrt(ffc[ i ]^ 2  +  ffc[ i + 1 ]^2);  
+   phase[ i ] = phase[ i + 1 ] = atan2( ffc[ i + 1], ffc[ i ] );
+}
+
+auto = ParamToggle("Auto dominant cycle", "No|Yes", 1 );
+sbar = Param( "Which FFT bin", 1, 0, 50 );
+
+skipbin1 = ParamToggle("Skip 1st FFT bin", "No|Yes", 1 );
+
+if( auto )
+{
+   sbar = int( LastValue(ValueWhen( amp == LastValue(Highest( IIf( skipbin1 AND x < 4, 0 , amp ) )), x / 2 )) );
+}
+
+fv = Status("firstvisiblebar");
+
+thisbar = Ref( int(x/2) == sbar, -fv);
+Plot( Ref(amp,-fv),
+"amplitude (bin " + Ref( int(x/2), -fv ) +")", IIf( thisbar, colorRed, colorWhite ),styleArea);
+
+Plot( IIf( BarCount - BarIndex() < Len, data, Null ) ,
+"de-trended input ("+Len+" bars)", colorOrange, styleLeftAxisScale );
+Plot( cos( phase[ sbar * 2 ] + (sbar) * x1 * 2 * 3.1415926 / Len ),
+" dominant cycle "+ Len/(sbar) + "(" + sbar + " bin) bars", colorBlue, styleOwnScale );
+
+GraphZOrder=1;
+GraphXSpace = 10;

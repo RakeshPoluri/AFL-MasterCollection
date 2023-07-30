@@ -1,0 +1,29 @@
+uptrend_color = ParamColor("Up Trend Color",colorGreen);
+pullback_color = ParamColor("Pull Back Color",colorGold);
+downtrend_color = ParamColor("Down Trend Color",colorRed);
+countertrend_color = ParamColor("Counter Trend Color",colorBlue);
+
+_short = Param("Short Length", 12, 2, 20, 1);
+
+_long = Param("Long Length", 26, 10, 30, 1);
+
+_direction = Param("ADX Length", 10, 2, 30, 1);
+
+_macd = MACD(_short, _long);
+
+_adx = ADX(_direction);
+
+_uptrend = (_adx > Ref(_adx, -1)) AND (_macd > Ref(_macd, -1));
+_pullback = (_adx < Ref(_adx, -1)) AND (_macd < Ref(_macd, -1));
+_downtrend = (_adx > Ref(_adx, -1)) AND (_macd < Ref(_macd, -1));
+_countertrend = (_adx < Ref(_adx, -1)) AND (_macd > Ref(_macd, -1));
+
+CandleBodyColor = IIf(_uptrend, uptrend_color, IIf(_pullback, pullback_color, IIf(_downtrend, downtrend_color, IIf(_countertrend, countertrend_color, colorDefault))));
+
+SetBarFillColor(CandleBodyColor);
+
+CandleWickColor = CandleBodyColor;
+
+SetChartOptions(0,chartShowArrows|chartShowDates);
+_N(Title = StrFormat("{{NAME}} - {{INTERVAL}} {{DATE}} Open %g, Hi %g, Lo %g, Close %g (%.1f%%) {{VALUES}}", O, H, L, C, SelectedValue( ROC( C, 1 ) ) ));
+Plot( C, "Close", CandleWickColor, styleCandle|styleNoTitle,Null,Null,0,0,5 );

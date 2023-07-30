@@ -1,0 +1,16 @@
+//SetChartOptions(0,0,chartGrid30|chartGrid70);
+periods = Param("Periods", 14, 1, 200, 1 );
+_param = Param("Moving Average", 7, 2, 100, 1);
+
+_rsi = RSI(periods);
+_ma = EMA(_rsi, _param);
+
+ob = Param("Over Bought", 70);
+md = Param("Middle", 50);
+os = Param("Over Sold", 30);
+
+Plot( _rsi, "RSI("+periods+")", ParamColor( "Color", colorBrightGreen ), ParamStyle("Style")  );
+Plot( _ma, "EMA("+_param+")", colorRed, ParamStyle("Style")  );
+PlotGrid(ob, colorWhite);
+PlotGrid(md, colorYellow);
+PlotGrid(os, colorWhite);
